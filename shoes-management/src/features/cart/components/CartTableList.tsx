@@ -1,21 +1,14 @@
 import { Box, Table, TableBody, TableCell, TableHead, TableRow } from '@mui/material';
-import { PayPalScriptProvider } from '@paypal/react-paypal-js';
 import { CustomMuiButton } from 'components';
-import { toast, ToastContainer } from 'react-toastify';
-import Paypal from 'helpers/payment/paypal';
-import { FC, useState } from 'react';
-import CartTableItem from './CartTableItem';
-import { useHistory } from 'react-router-dom';
 import { CheckoutEnumPath } from 'features/checkout/checkout';
 import { HomeEnumPath } from 'features/home/home';
+import { FC, useState } from 'react';
+import { useHistory } from 'react-router-dom';
+import { ToastContainer } from 'react-toastify';
+import CartTableItem from './CartTableItem';
 const CartTableList: FC = () => {
   const history = useHistory();
   const handlePayment = () => {
-    // toast.success('Đặt hàng thàng công!');
-    // localStorage.removeItem('cart');
-    // setTimeout(() => {
-    //   history.push('/');
-    // }, 1000);
     history.push(CheckoutEnumPath.CHECKOUT);
   };
 

@@ -220,14 +220,14 @@ export const Header: FC = () => {
           anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
         >
           <MenuItem onClick={() => history.push(AuthEnumsPath.CHANGE_INFORMATION)}>
-            <Avatar /> Profile
+            <Avatar /> Thông tin cá nhân
           </MenuItem>
           <Divider />
           <MenuItem onClick={handleLogout}>
             <ListItemIcon>
               <Logout fontSize="small" />
             </ListItemIcon>
-            Logout
+            Đăng xuất
           </MenuItem>
         </Menu>
       )}

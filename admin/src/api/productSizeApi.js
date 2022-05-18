@@ -1,26 +1,26 @@
 import axiosClient from "./axiosClient";
 
-const blogApi = {
-  getAll(limit, page) {
-    const url = `blog/all?limit=${limit}&&page=${page - 1}`;
+const productSizeApi = {
+  getAll() {
+    const url = "productSize/all";
     return axiosClient.get(url);
   },
   getById(id) {
-    const url = `blog/${id}`;
+    const url = `productSize/${id}`;
     return axiosClient.get(url);
   },
   create(data) {
-    const url = "blog/create";
+    const url = "productSize/create";
     return axiosClient.post(url, data);
   },
   update(data) {
-    const url = "blog/update";
+    const url = "productSize/update";
     return axiosClient.post(url, data);
   },
   delete(id) {
-    const url = `blog/delete/${id}`;
+    const url = `productSize/${id}`;
     return axiosClient.delete(url);
   },
 };
 
-export default blogApi;
+export default productSizeApi;

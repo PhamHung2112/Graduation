@@ -18,7 +18,7 @@ const sizeApi = {
     return axiosClient.post(url, data);
   },
   delete(id) {
-    const url = `size/${id}`;
+    const url = `size/delete/${id}`;
     return axiosClient.delete(url);
   },
 };

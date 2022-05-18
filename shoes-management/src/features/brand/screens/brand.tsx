@@ -6,7 +6,6 @@ import { FC, useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import BrandColumn from '../components/BrandColumn';
 import BrandFilter, { FilterOption } from '../components/BrandFilter';
-import BrandSort from '../components/BrandSort';
 import Loader from '../../../components/Loader/Loader';
 
 const BrandPage: FC = () => {
@@ -95,7 +94,6 @@ const BrandPage: FC = () => {
                 productColumn={productColumn}
                 onUpdateColumn={handleUpdateProductColumn}
               />
-              <BrandSort />
             </Box>
             {loading ? (
               <Loader isFullScreen={false} />
@@ -121,7 +119,7 @@ const BrandPage: FC = () => {
                 page={filterOption.page ? filterOption.page : 1}
                 color="secondary"
                 onChange={changPage}
-                count={Math.floor(countPage / 8) + 1}
+                count={Math.ceil(countPage / 8)}
               />
             </Box>
           </Box>

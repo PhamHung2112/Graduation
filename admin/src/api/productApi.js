@@ -1,8 +1,8 @@
 import axiosClient from "./axiosClient";
 
 const productApi = {
-  getAll() {
-    const url = "product/all";
+  getAll(limit, page) {
+    const url = `product/all?limit=${limit}&&page=${page - 1}`;
     return axiosClient.get(url);
   },
   getById(id) {
@@ -18,7 +18,7 @@ const productApi = {
     return axiosClient.post(url, data);
   },
   delete(id) {
-    const url = `product/${id}`;
+    const url = `product/delete/${id}`;
     return axiosClient.delete(url);
   },
 };

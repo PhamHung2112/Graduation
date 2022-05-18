@@ -46,22 +46,22 @@ export default function DeleteTypeModal({
           Bạn có chắc chắn xoá loại thương hiệu {type.typeName}
         </Typography>
         <IconButton
-          sx={(theme) => ({
+          sx={{
             position: "absolute",
             top: "-15px",
             right: "-10px",
             width: "30px",
             height: "30px",
             borderRadius: "50%",
-            border: `1px solid ${theme.palette.primary.main}`,
-            color: theme.palette.primary.main,
+            border: "1px solid #1976d2",
+            color: "#1976d2",
             backgroundColor: "#fff",
 
             "&:hover": {
-              backgroundColor: theme.palette.primary.main,
+              backgroundColor: "#1976d2",
               color: "#fff",
             },
-          })}
+          }}
           onClick={handleCloseModal}
         >
           <Close />

@@ -1,22 +1,22 @@
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Box, Table, TableBody, TableCell, TableHead, TableRow } from '@mui/material';
 import { api } from 'api/api';
+import { useAppSelector } from 'app/hooks';
+import { RootState } from 'app/store';
 import { CustomMuiButton, InputField } from 'components';
-import { CheckoutEnumPath } from 'features/checkout/checkout';
+import { HomeEnumPath } from 'features/home/home';
 import { FC, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useHistory } from 'react-router-dom';
-import { toast, ToastContainer } from 'react-toastify';
+import { toast } from 'react-toastify';
 import { LocalKey, LocalStorage } from 'ts-localstorage';
 import * as yup from 'yup';
 import { Voucher } from '../../../constants';
 import PaypalButtonWrapper from '../../../helpers/payment/paypal';
 import CartTableItem from './CartTableItem';
-import { useAppDispatch, useAppSelector } from 'app/hooks';
-import { RootState } from 'app/store';
 
 const schema = yup.object().shape({
-  voucher: yup.string().required('Vui lòng nhập mã giảm giá'),
+  voucherName: yup.string().required('Vui lòng nhập mã giảm giá'),
 });
 
 const moneyTotal = () => {
@@ -34,66 +34,69 @@ const CartTableList: FC = () => {
   const history = useHistory();
   const [totalMoney, setTotalMoney] = useState<number>(0);
   const [voucher, setVoucher] = useState<Voucher>();
-  const { control, handleSubmit, reset } = useForm({
+  const { control, handleSubmit } = useForm({
     defaultValues: {
-      voucher: '',
+      voucherName: '',
     },
     resolver: yupResolver(schema),
   });
   const userInfor = useAppSelector((state: RootState) => state.auth.currentUser);
-  const handlePayment = async() => {
+  const handlePayment = async () => {
     // set voucherId
-    const voucherId=1;
+    const voucherId = voucher?.id;
 
     // get user
-    const userId= userInfor?.id;
+    const userId = userInfor?.id;
 
-    // get cart 
+    // get cart
     const key = new LocalKey('cart', '');
     const dataLC: any = LocalStorage.getItem(key);
     const a = JSON.parse(dataLC) || [];
-    const cartList = a.map((i: any)=>{
+    const cartList = a.map((i: any) => {
       return {
         productId: i.id,
-        amount: i.price*i.count
-      }
-    })
+        amount: i.price * i.count,
+      };
+    });
 
     // sum func
-    let total= moneyTotal()
+    let total = moneyTotal();
 
-     try {
-
+    try {
       //  add invoice
-      const res= await api.post('invoice/create',{voucherId, userId, total });
-      if(res){
-
+      if (voucher?.id) {
+        total = total - (total * voucher.voucherPercent) / 100;
+      }
+      const res = await api.post('invoice/create', {
+        voucherId,
+        userId: parseInt(userId as string),
+        total,
+      });
+      if (res) {
         // get Id invoice for detailInvoice table
-        const invoiceId= res.data?.invoice?.id;
+        const invoiceId = res.data?.invoice?.id;
 
         // add detailInvoice
-        for(let i=0; i<cartList.length; i++){
-          await api.post('invoiceDetail/create',{
+        for (let i = 0; i < cartList.length; i++) {
+          await api.post('invoiceDetail/create', {
             invoiceId,
-            ... cartList[i]
+            ...cartList[i],
           });
         }
-
       }
     } catch (error) {
-      console.log(error);
+      toast.error('Thanh toán đơn hàng thất bại');
     }
-    
+
     localStorage.removeItem('cart');
     toast.success('Thanh toán đơn hàng thành công');
-    history.push(CheckoutEnumPath.CHECKOUT);
+    history.push(HomeEnumPath.HOMEPAGE);
   };
 
-  const handleSubmitForm = async (formValues: { voucher: string }) => {
+  const handleSubmitForm = async (formValues: { voucherName: string }) => {
     try {
-      const response = await api.get(`/voucher/all?search=${formValues.voucher}`);
+      const response = await api.get(`voucher/all?search=${formValues.voucherName}`);
       setVoucher(response.data.vouchers.rows[0]);
-      reset();
     } catch (error) {
       toast.error('Voucher không tồn tại');
     }
@@ -139,7 +142,7 @@ const CartTableList: FC = () => {
           >
             Thanh toán COD
           </CustomMuiButton>
-          <PaypalButtonWrapper total={totalMoney} />
+          <PaypalButtonWrapper total={totalMoney} voucher={voucher} />
         </Box>
         <Box
           component="form"
@@ -160,7 +163,12 @@ const CartTableList: FC = () => {
             },
           }}
         >
-          <InputField name="voucher" control={control} label="Mã giảm giá" />
+          <InputField
+            name="voucherName"
+            control={control}
+            label="Mã giảm giá"
+            readOnly={voucher?.id ? true : false}
+          />
           <CustomMuiButton
             backgroundColor="#000000"
             color="#ffffff"
@@ -172,7 +180,6 @@ const CartTableList: FC = () => {
           </CustomMuiButton>
         </Box>
       </Box>
-      <ToastContainer position="top-right" autoClose={3000} closeOnClick />
     </Box>
   );
 };

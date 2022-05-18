@@ -1,6 +1,6 @@
 const router = require("express").Router();
 const BlogService = require("../services/BlogService");
-const authMiddleware = require("../middlewares/authMiddleware").default;
+const authMiddleware = require("../middlewares/authMiddleware");
 
 router.get("/all", BlogService.getAll);
 

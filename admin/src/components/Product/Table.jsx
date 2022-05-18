@@ -1,564 +1,769 @@
-import React, { useState, useRef, useEffect } from "react";
-import Table from "@mui/material/Table";
-import TableBody from "@mui/material/TableBody";
-import TableCell from "@mui/material/TableCell";
-import TableContainer from "@mui/material/TableContainer";
-import TableHead from "@mui/material/TableHead";
-import TableRow from "@mui/material/TableRow";
-import Button from '@mui/material/Button';
-import Paper from "@mui/material/Paper";
-import Box from '@mui/material/Box';
-import Modal from '@mui/material/Modal';
-import "./Table.css";
-import Pagination from '@mui/material/Pagination';
-import Stack from '@mui/material/Stack';
-import TextField from '@mui/material/TextField';
-import EditSharpIcon from '@mui/icons-material/EditSharp';
-import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
-import { getType, postProduct, getProduct, deleteProductApi, editProductApi, updateProductApi } from "../../api/apiClient"
-import { ToastContainer, toast } from 'react-toastify';
-import ClearIcon from '@mui/icons-material/Clear';
+import { Add, Close, Delete, Edit, Visibility } from "@mui/icons-material";
+import ClearIcon from "@mui/icons-material/Clear";
+import {
+  Box,
+  Breadcrumbs,
+  Button,
+  FormControl,
+  IconButton,
+  InputLabel,
+  MenuItem,
+  Modal,
+  Pagination,
+  Select,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
+  TextField,
+  Tooltip,
+  Typography,
+} from "@mui/material";
+import React, { useEffect, useState } from "react";
+import { toast } from "react-toastify";
+import typeApi from "../../api/typeApi";
+import productApi from "../../api/productApi";
+// import {
+//   deleteProductApi,
+//   editProductApi,
+//   getProduct,
+//   getType,
+//   postProduct,
+//   updateProductApi,
+// } from "../../api/apiClient";
 import { imageUpload } from "../../helper/imageUpload";
+import ProductModal from "./ProductModal";
+import SizeModal from "./SizeModal";
+
 const style = {
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    transform: 'translate(-50%, -50%)',
-    width: 400,
-    bgcolor: 'background.paper',
-    boxShadow: 24,
-    pt: 2,
-    px: 4,
-    pb: 3,
+  position: "absolute",
+  top: "50%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
+  width: 500,
+  bgcolor: "background.paper",
+  boxShadow: 24,
+  pt: 2,
+  px: 4,
+  pb: 3,
 };
 
-export default function BasicTable() {
-    const [open, setOpen] = React.useState(false);
-    const [images, setImages] = useState([])
-    const handleOpen = () => {
-        setOpen(true);
-    };
-    const handleClose = () => {
-        setOpen(false);
-    };
+export default function ProductTable() {
+  const [openInfor, setOpenInfor] = useState(false);
+  const [productInfor, setProductInfor] = useState();
+  const [open, setOpen] = useState(false);
+  const [images, setImages] = useState([]);
+  const [totalPage, setTotalPage] = useState(1);
+  const [page, setPage] = useState(1);
+  const handleOpen = () => {
+    setOpen(true);
+  };
+  const handleClose = () => {
+    setOpen(false);
+  };
 
-    const [baseImage, setBaseImage] = useState({
-        img: null,
+  const handleOpenInfor = (product) => {
+    setOpenInfor(true);
+    setProductInfor(product);
+  };
+  const handleCloseInfor = () => {
+    setOpenInfor(false);
+  };
+
+  const [baseImage, setBaseImage] = useState([]);
+
+  //image
+  const handleChangeImages = (e) => {
+    const files = [...e.target.files];
+    let err = "";
+    let newImages = [];
+    files.forEach((file) => {
+      if (!file) return (err = "File không tồn tại");
+
+      if (file.size > 1024 * 1024 * 5) {
+        return (err = "Kích thước ảnh tối đa 5mb.");
+      }
+
+      return newImages.push(file);
     });
+    if (err) {
+      toast.error(err);
+    }
+    const fileArray = [];
+    const fileObj = [];
+    fileObj.push(e.target.files);
+    for (let i = 0; i < fileObj[0].length; i++) {
+      fileArray.push(URL.createObjectURL(fileObj[0][i]));
+    }
+    setBaseImage(fileArray);
+    setImages([...images, ...newImages]);
+  };
 
-    //image
-    const handleChangeImages = e => {
-        const files = [...e.target.files]
-        let err = ""
-        let newImages = []
-        files.forEach(file => {
-            if (!file) return err = "File does not exist."
+  //bsse create
 
-            if (file.size > 1024 * 1024 * 5) {
-                return err = "The image largest is 5mb."
-            }
+  const [dataList, setDataList] = useState();
+  const [callList, setCallList] = useState(false);
+  const [listProduct, setListProduct] = useState();
+  const callApiList = async () => {
+    const data = await typeApi.getAll();
+    setDataList(data.types.rows);
+  };
+  const getProductApi = async () => {
+    const data = await productApi.getAll(8, page);
+    setListProduct(data.products.rows);
+    setTotalPage(data.products.count);
+  };
+  useEffect(() => {
+    try {
+      callApiList();
+      getProductApi();
+    } catch (error) {
+      toast.error(error.response.data.message);
+    }
+  }, [callList, page]);
 
-            return newImages.push(file)
-        })
-        if (err) {
-            console.log("err roi nhe!")
+  const [form, setForm] = useState({
+    productName: "",
+    productPrice: 0,
+    discount: 0,
+    summary: "",
+    typeId: "",
+    image: "",
+  });
+
+  useEffect(() => {
+    try {
+      callApiList();
+    } catch (error) {
+      toast.error(error.response.data.message);
+    }
+  }, [callList]);
+
+  const onChangInput = (e) => {
+    var target = e.target;
+    var name = target.name;
+    var value = target.value;
+    setForm({ ...form, [name]: value });
+  };
+
+  const formDataUploadServer = async () => {
+    try {
+      if (
+        form.productName.length > 1 &&
+        form.productPrice.length > 1 &&
+        form.summary.length > 1 &&
+        form.typeId !== 0
+      ) {
+        const res = await imageUpload(images);
+        const arr = [];
+        for (var i = 0; i < res.length; i++) {
+          arr.push(res[i].url);
         }
-        setImages([...images, ...newImages])
+        const data = {
+          image: arr.toString(),
+          productName: form.productName,
+          summary: form.summary,
+          discount: +form.discount,
+          productPrice: +form.productPrice,
+          typeId: +form.typeId,
+        };
+        setImages([]);
+        await productApi.create(data);
+        toast.success("Thêm mới sản phẩm thành công");
+        setCallList(!callList);
+        setOpen(false);
+      } else {
+        toast.error("Tất cả các trường phải có");
+      }
+    } catch (error) {
+      toast.error(error);
     }
+  };
 
-    //bsse create
+  const [id, setId] = useState();
+  const [openDelete, setOpenDelete] = useState(false);
+  const [dataDelete, setDataDelete] = useState();
 
-    const [dataList, setDataList] = useState()
-    const [callList, setCallList] = useState(false)
-    const [listProduct, setListProduct] = useState()
-    const callApiList = async () => {
-        const data = await getType()
-        setDataList(data.data.types.rows)
-    }
-    const getProductApi = async () => {
-        const data = await getProduct()
-        setListProduct(data.data.products.rows)
-    }
-    useEffect(() => {
-        try {
-            callApiList()
-            getProductApi()
-        } catch (error) {
-            toast.error(error.response.data.message)
-        }
+  const openDeleteRow = async (id) => {
+    setOpenDelete(true);
+    setId(id);
+    const res = await productApi.getById(id);
+    setDataDelete(res.product);
+  };
+  const handleCloseDelete = () => {
+    setOpenDelete(false);
+  };
 
-    }, [callList])
+  const deleteBrand = async () => {
+    try {
+      await productApi.delete(id);
+      setOpenDelete(false);
+      setCallList(!callList);
+      toast.success("Xóa sản phẩm thành công");
+    } catch (error) {}
+  };
 
-    const [form, setForm] = useState({
-        productName: '',
-        productPrice: '',
-        discount: '',
-        slug: '',
-        summary: '',
-        typeId: '',
-        image: '',
-        typeId: ''
-    })
+  //
 
-    useEffect(() => {
-        try {
-            callApiList()
-        } catch (error) {
-            toast.error(error.response.data.message)
-        }
-    }, [callList])
+  const [openEdit, setOpenEdit] = useState(false);
 
+  const handleCloseEdit = () => {
+    setOpenEdit(false);
+  };
 
-    const onChangInput = (e) => {
-        var target = e.target;
-        var name = target.name;
-        var value = target.value;
-        setForm({ ...form, [name]: value });
-    };
+  const [formEdit, setFormEdit] = useState({
+    productName: "",
+    productPrice: "",
+    discount: "",
+    summary: "",
+    typeId: "",
+    image: "",
+  });
+  const deleteImageOle = (e) => {
+    const dataImageOle = formEdit.image.filter((img) => img !== e);
+    setFormEdit({ ...formEdit, image: dataImageOle });
+  };
 
-
-
-
-    const formDataUploadServer = async () => {
-
-        try {
-
-            if ((form.productName).length > 1 && (form.productPrice).length > 1 && (form.slug).length > 1 && (form.summary).length > 1 && (form.typeId) != 0) {
-                const res = await imageUpload(images);
-                const arr = [];
-                for (var i = 0; i < res.length; i++) {
-                    arr.push(res[i].url)
-                }
-                const data = {
-                    image: arr.toString(),
-                    productName: form.productName,
-                    slug: form.slug,
-                    summary: form.summary,
-                    discount: form.discount,
-                    productPrice: form.productPrice,
-                    typeId: form.typeId
-                }
-                setImages([])
-                await postProduct(data)
-                setBaseImage('')
-                toast.success("Tạo brand thành công")
-                setCallList(!callList)
-                setOpen(false)
-            } else {
-                toast.error("Tất cả các trường phải có")
-            }
-        } catch (error) {
-            toast.error(error)
-        }
-    }
-
-    const [id, setId] = useState()
-    const [openDelete, setOpenDelete] = useState(false)
-    const openDeleteRow = (id) => {
-        setOpenDelete(true)
-        setId(id)
-    }
-    const handleCloseDelete = () => {
-        setOpenDelete(false)
-    }
-
-    const deleteBrand = async () => {
-        try {
-            await deleteProductApi(id)
-            setOpenDelete(false)
-            setCallList(!callList)
-            toast.success("Xóa product thành công")
-        } catch (error) {
-
-        }
-
-    }
-
-    //
-
-
-    const [openEdit, setOpenEdit] = useState(false)
-
-    const handleCloseEdit = () => {
-        setOpenEdit(false)
-    }
-
-    const [formEdit, setFormEdit] = useState({
-        productName: '',
-        productPrice: '',
-        discount: '',
-        slug: '',
-        summary: '',
-        typeId: '',
-        image: '',
-        typeId: ''
-    })
-    const deleteImageOle = (e) => {
-        const dataImageOle = (formEdit.image).filter(img => img != e)
-        setFormEdit({ ...formEdit, image : dataImageOle})
-}
-
-const openEditRow = async (id) => {
-    setOpenEdit(true)
-    setId(id)
-    const res = await editProductApi(id)
-    const arrImage = (res.data.product.image).split(",")
+  const openEditRow = async (id) => {
+    setOpenEdit(true);
+    setId(id);
+    const res = await productApi.getById(id);
+    const arrImage = res.product.image.split(",");
     setFormEdit({
-        productName: res.data.product.productName,
-        productPrice: res.data.product.productPrice,
-        discount: res.data.product.discount,
-        slug: res.data.product.slug,
-        summary: res.data.product.summary,
-        typeId: res.data.product.typeId,
-        image: arrImage,
-    })
-}
+      productName: res.product.productName,
+      productPrice: res.product.productPrice,
+      discount: res.product.discount,
+      summary: res.product.summary,
+      typeId: res.product.typeId,
+      image: arrImage,
+    });
+  };
 
-const onChangInputEdit = (e) => {
-    console.log(e.target.value)
+  const onChangInputEdit = (e) => {
     var target = e.target;
     var name = target.name;
     var value = target.value;
     setFormEdit({ ...formEdit, [name]: value });
-}
+  };
 
-const formEditDataUploadServer = async () => {
-    if ((formEdit.productName).length > 1 && (formEdit.productPrice) > 1 && (formEdit.slug).length > 1 && (formEdit.summary).length > 1 && (formEdit.typeId) != 0) {
-        const res = await imageUpload(images);
-        const arr = [];
-        for (var i = 0; i < res.length; i++) {
-            arr.push(res[i].url)
-        }
-        const arrKetnoi =  arr.concat(formEdit.image).toString()
-        const data = {
-            productName: formEdit.productName,
-            productPrice: formEdit.productPrice,
-            discount: formEdit.discount,
-            slug: formEdit.slug,
-            summary: formEdit.summary,
-            typeId: formEdit.typeId,
-            image: arrKetnoi ,
-            id:id
-        }
+  const formEditDataUploadServer = async () => {
+    if (
+      formEdit.productName.length > 1 &&
+      formEdit.productPrice > 1 &&
+      formEdit.summary.length > 1 &&
+      formEdit.typeId !== 0
+    ) {
+      const res = await imageUpload(images);
+      const arr = [];
+      for (var i = 0; i < res.length; i++) {
+        arr.push(res[i].url);
+      }
+      const arrKetnoi = arr.concat(formEdit.image).toString();
+      const data = {
+        productName: formEdit.productName,
+        productPrice: formEdit.productPrice,
+        discount: formEdit.discount,
+        summary: formEdit.summary,
+        typeId: formEdit.typeId,
+        image: arrKetnoi,
+        id: id,
+      };
 
-        setImages([])
-        await updateProductApi(data)
-        setBaseImage('')
-        toast.success("Sửa product thành công")
-        setCallList(!callList)
-        setOpenEdit(false)
+      setImages([]);
+      await productApi.update(data);
+      toast.success("Cập nhật sản phẩm thành công");
+      setCallList(!callList);
+      setOpenEdit(false);
     } else {
-        toast.error("Tất cả các trường phải có")
+      toast.error("Tất cả các trường phải có");
     }
-}
+  };
 
-return (
-    <div className="TableBrand">
-        <ToastContainer
-            position="top-right"
-            autoClose={1000}
-            closeOnClick />
-        <div className="brandCreate" onClick={handleOpen}>
-            <Button variant="contained" >Thêm Product</Button>
-        </div>
+  const [openSize, setOpenSize] = useState(false);
 
+  const handleOpenSize = () => setOpenSize(true);
+  const handleCloseSize = () => setOpenSize(false);
 
-        <div className="TableBrandScroll">
-            <TableContainer
-                component={Paper}
-                style={{ boxShadow: "0px 13px 20px 0px #80808029" }}
+  const handleChangePage = (e, page) => {
+    setPage(page);
+  };
+
+  return (
+    <Box style={{ margin: "100px 30px 0 30px" }}>
+      <Box display="flex" justifyContent="space-between" alignItems="center">
+        <Box>
+          <Typography variant="h5" fontWeight={500} marginBottom="15px">
+            Quản lý sản phẩm
+          </Typography>
+          <Breadcrumbs aria-label="breadcrumb">
+            <Typography color="inherit">Trang chủ</Typography>
+            <Typography color="primary" fontWeight={500}>
+              Sản phẩm
+            </Typography>
+          </Breadcrumbs>
+        </Box>
+        <Box display="flex">
+          <Button
+            variant="contained"
+            color="error"
+            sx={{ mr: 2 }}
+            onClick={handleOpenSize}
+          >
+            Quản lý size giày
+          </Button>
+          <Button
+            variant="contained"
+            startIcon={<Add />}
+            color="primary"
+            onClick={handleOpen}
+          >
+            Thêm sản phẩm
+          </Button>
+        </Box>
+      </Box>
+
+      <Box margin="20px 0 40px">
+        <Table
+          sx={{
+            border: "1px solid #e2e2e2",
+
+            "& .MuiTableCell-head": {
+              borderRight: "1px solid #e2e2e2",
+              fontWeight: 600,
+            },
+          }}
+        >
+          <TableHead>
+            <TableRow>
+              <TableCell>Ảnh sản phẩm</TableCell>
+              <TableCell align="left">Tên sản phẩm</TableCell>
+              <TableCell align="center">Giá</TableCell>
+              <TableCell align="center">Giảm giá</TableCell>
+              <TableCell align="left"></TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody sx={{ "&:last-child td, &:last-child th": { border: 0 } }}>
+            {!!listProduct &&
+              listProduct.map((row) => (
+                <TableRow key={row.id}>
+                  <TableCell>
+                    <img
+                      src={row.image.split(",")[0]}
+                      alt={row.productName}
+                      width={180}
+                      height={180}
+                    />
+                  </TableCell>
+                  <TableCell align="left">{row.productName}</TableCell>
+                  <TableCell align="center">
+                    {new Intl.NumberFormat("vi-VN", {
+                      style: "currency",
+                      currency: "VND",
+                    }).format(row.productPrice)}
+                  </TableCell>
+                  <TableCell align="center">
+                    {row.discount > 0 ? row.discount + "%" : 0}
+                  </TableCell>
+                  <TableCell align="center">
+                    <Tooltip
+                      title="Xem thông tin chi tiết sản phẩm"
+                      placement="top"
+                      arrow
+                      disableInteractive
+                    >
+                      <IconButton
+                        color="secondary"
+                        sx={{ mr: 1 }}
+                        onClick={() => handleOpenInfor(row)}
+                      >
+                        <Visibility />
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip
+                      title="Sửa sản phẩm"
+                      placement="top"
+                      arrow
+                      disableInteractive
+                    >
+                      <IconButton
+                        color="primary"
+                        sx={{ mr: 1 }}
+                        onClick={() => openEditRow(row.id)}
+                      >
+                        <Edit />
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip
+                      title="Xoá sản phẩm"
+                      placement="top"
+                      arrow
+                      disableInteractive
+                    >
+                      <IconButton
+                        sx={{ mr: 1 }}
+                        onClick={() => openDeleteRow(row.id)}
+                      >
+                        <Delete color="error" />
+                      </IconButton>
+                    </Tooltip>
+                  </TableCell>
+                </TableRow>
+              ))}
+          </TableBody>
+        </Table>
+      </Box>
+
+      <Box
+        marginBottom="40px"
+        width="100%"
+        sx={{
+          "& > nav": {
+            justifyContent: "center",
+            width: "100%",
+            display: "flex",
+          },
+        }}
+      >
+        <Pagination
+          color="primary"
+          count={Math.ceil(totalPage / 8)}
+          page={page}
+          onChange={handleChangePage}
+        />
+      </Box>
+
+      {/* Create */}
+      <Modal open={open} onClose={handleClose}>
+        <Box sx={{ ...style }}>
+          <Typography
+            align="center"
+            fontSize="30px"
+            fontWeight={500}
+            letterSpacing="1px"
+            mb={1}
+            textTransform="uppercase"
+            color="primary"
+          >
+            Thêm sản phẩm
+          </Typography>
+
+          <TextField
+            label="Tên sản phẩm"
+            variant="outlined"
+            name="productName"
+            value={form.productName}
+            onChange={onChangInput}
+            fullWidth
+            margin="normal"
+          />
+
+          <TextField
+            label="Giá"
+            variant="outlined"
+            type="number"
+            name="productPrice"
+            value={form.productPrice}
+            onChange={onChangInput}
+            fullWidth
+            margin="normal"
+          />
+
+          <TextField
+            label="Giảm giá"
+            type="number"
+            variant="outlined"
+            name="discount"
+            value={form.discount}
+            onChange={onChangInput}
+            fullWidth
+            margin="normal"
+          />
+
+          <TextField
+            label="Mô tả"
+            multiline
+            variant="outlined"
+            name="summary"
+            value={form.summary}
+            onChange={onChangInput}
+            fullWidth
+            margin="normal"
+          />
+
+          <FormControl variant="outlined" fullWidth margin="normal">
+            <InputLabel id="typeId">Loại thương hiệu</InputLabel>
+            <Select
+              labelId="typeId"
+              label="Loại thương hiệu"
+              value={form.typeId}
             >
-                <Table sx={{ minWidth: 650 }} aria-label="simple table">
-                    <TableHead>
-                        <TableRow>
-                            <TableCell>	productName </TableCell>
-                            <TableCell align="left">productPrice</TableCell>
-                            <TableCell align="left">discount</TableCell>
-                            <TableCell align="left">	slug </TableCell>
-                            <TableCell align="left">		summary  </TableCell>
-                            <TableCell align="left">	image </TableCell>
-                            <TableCell align="left">	createdAt </TableCell>
-                            <TableCell align="left">Status</TableCell>
+              {!!dataList &&
+                dataList.map((option) => (
+                  <MenuItem key={option.id} value={option.id}>
+                    {option.typeName}
+                  </MenuItem>
+                ))}
+            </Select>
+          </FormControl>
 
+          <Typography my={2} fontSize={16}>
+            Ảnh sản phẩm
+          </Typography>
+          <Box mb={3} display="flex" flexWrap="wrap">
+            {baseImage.length > 0
+              ? baseImage.map((image, index) => (
+                  <Box mr={3} key={index}>
+                    <img src={image} width={120} height={120} alt={index} />
+                  </Box>
+                ))
+              : null}
+          </Box>
+          <input type="file" multiple onChange={handleChangeImages} />
 
-                        </TableRow>
-                    </TableHead>
-                    <TableBody style={{ color: "white" }}>
-                        {!!listProduct && listProduct.map((row) => (
-                            <TableRow
-                                key={row.id}
-                                sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
-                            >
-                                <TableCell component="th" scope="row">
-                                    {row.productName}
-                                </TableCell>
-                                <TableCell align="left">{row.productPrice}</TableCell>
+          <IconButton
+            sx={{
+              position: "absolute",
+              top: "-15px",
+              right: "-10px",
+              width: "30px",
+              height: "30px",
+              borderRadius: "50%",
+              border: "1px solid #1976d2",
+              color: "#1976d2",
+              backgroundColor: "#fff",
 
-                                <TableCell align="left">{row.discount}</TableCell>
-                                <TableCell align="left">{row.slug}</TableCell>
-                                <TableCell align="left">{row.summary}</TableCell>
-                                <TableCell align="left"><img src={(row.image).split(",")[0]} alt="error" className="imgavatarbrand" /></TableCell>
-                                <TableCell align="left"> {(row.createdAt).slice(0, 10)}  </TableCell>
+              "&:hover": {
+                backgroundColor: "#1976d2",
+                color: "#fff",
+              },
+            }}
+            onClick={handleClose}
+          >
+            <Close />
+          </IconButton>
+          <Box display="flex" mt={3} justifyContent="center">
+            <Button
+              variant="contained"
+              sx={{ mr: 2 }}
+              onClick={formDataUploadServer}
+            >
+              Thêm mới
+            </Button>
+            <Button variant="contained" onClick={handleClose} color="error">
+              Hủy
+            </Button>
+          </Box>
+        </Box>
+      </Modal>
 
-                                <TableCell align="left">
-                                    <div className="groupIcon">
-                                        <DeleteForeverIcon className="icondelete" onClick={() => openDeleteRow(row.id)} />
-                                        < EditSharpIcon className="iconedit" onClick={() => openEditRow(row.id)} />
-                                    </div>
-                                </TableCell>
-                            </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
-            </TableContainer>
-        </div>
-        {/* <Stack spacing={2}>
-        <Pagination count={10} color="primary" />
-      </Stack> */}
+      {/* edit */}
 
+      <Modal open={openEdit} onClose={handleCloseEdit}>
+        <Box sx={{ ...style }}>
+          <Typography
+            align="center"
+            fontSize="30px"
+            fontWeight={500}
+            letterSpacing="1px"
+            mb={1}
+            textTransform="uppercase"
+            color="primary"
+          >
+            Cập nhật sản phẩm
+          </Typography>
 
-        {/* Create */}
-        <Modal
-            open={open}
-            onClose={handleClose}
-            aria-labelledby="parent-modal-title"
-            aria-describedby="parent-modal-description"
-        >
-            <Box sx={{ ...style, width: 400 }}>
-                <h2 id="parent-modal-title">Tạo thêm brand</h2>
+          <TextField
+            id="standard-textarea"
+            label="Tên sản phẩm"
+            variant="outlined"
+            name="productName"
+            value={formEdit.productName}
+            onChange={onChangInputEdit}
+            fullWidth
+            margin="normal"
+          />
 
-                <TextField
-                    id="standard-textarea"
-                    label="Thêm tên product mới "
-                    placeholder="..."
-                    multiline
-                    variant="standard"
-                    className="inputBrand"
-                    name="productName"
-                    value={form.productName}
-                    onChange={onChangInput}
-                />
+          <TextField
+            label="Giá sản phẩm"
+            variant="outlined"
+            type="number"
+            name="productPrice"
+            value={formEdit.productPrice}
+            onChange={onChangInputEdit}
+            fullWidth
+            margin="normal"
+          />
 
-                <TextField
+          <TextField
+            label="Giảm giá"
+            type="number"
+            variant="outlined"
+            name="discount"
+            value={formEdit.discount}
+            onChange={onChangInputEdit}
+            fullWidth
+            margin="normal"
+          />
 
-                    label="Giá product mới "
-                    placeholder="..."
-                    multiline
-                    variant="standard"
-                    className="inputBrand"
-                    type="number"
-                    name="productPrice"
-                    value={form.productPrice}
-                    onChange={onChangInput}
-                />
+          <TextField
+            label="summary"
+            multiline
+            variant="outlined"
+            name="summary"
+            value={formEdit.summary}
+            onChange={onChangInputEdit}
+            fullWidth
+            margin="normal"
+          />
 
-                <TextField
+          <FormControl variant="outlined" fullWidth margin="normal">
+            <InputLabel id="typeId">Loại thương hiệu</InputLabel>
+            <Select
+              labelId="typeId"
+              label="Loại thương hiệu"
+              value={formEdit.typeId}
+            >
+              {!!dataList &&
+                dataList.map((option) => (
+                  <MenuItem key={option.id} value={option.id}>
+                    {option.typeName}
+                  </MenuItem>
+                ))}
+            </Select>
+          </FormControl>
+          <Typography my={2} fontSize={16}>
+            Ảnh sản phẩm
+          </Typography>
+          <Box mb={3} display="flex" flexWrap="wrap">
+            {!!formEdit.image &&
+              formEdit.image.map((e, index) => {
+                return (
+                  <Box
+                    key={index}
+                    mr={3}
+                    position="relative"
+                    sx={{
+                      "& img": {
+                        border: "1px solid #e2e2e2",
+                      },
+                    }}
+                  >
+                    <ClearIcon
+                      className="icondelete"
+                      onClick={() => deleteImageOle(e)}
+                      sx={{
+                        position: "absolute",
+                        left: "-10px",
+                        top: "-10px",
+                        cursor: "pointer",
+                      }}
+                    />
+                    <img src={e} alt="error" width={100} height={100} />
+                  </Box>
+                );
+              })}
+          </Box>
 
-                    label="Giảm product mới "
-                    placeholder="..."
-                    type="number"
-                    multiline
-                    variant="standard"
-                    className="inputBrand"
-                    name="discount"
-                    value={form.discount}
-                    onChange={onChangInput}
-                />
+          <div className="imageProduct">Thêm ảnh</div>
 
-                <TextField
-                    id="standard-textarea"
-                    label="Slug "
-                    placeholder="..."
-                    multiline
-                    variant="standard"
-                    className="inputBrand"
-                    name="slug"
-                    value={form.slug}
-                    onChange={onChangInput}
-                />
+          <input type="file" multiple onChange={handleChangeImages} />
 
-                <TextField
-                    id="standard-textarea"
-                    label="summary"
-                    placeholder="..."
-                    multiline
-                    variant="standard"
-                    className="inputBrand"
-                    name="summary"
-                    value={form.summary}
-                    onChange={onChangInput}
-                />
+          <IconButton
+            sx={{
+              position: "absolute",
+              top: "-15px",
+              right: "-10px",
+              width: "30px",
+              height: "30px",
+              borderRadius: "50%",
+              border: "1px solid #1976d2",
+              color: "#1976d2",
+              backgroundColor: "#fff",
 
-                <div className="optionBrand">
-                    <label>Danh sách Product</label>
-                    <select name="typeId" value={form.typeId} onChange={onChangInput}>
+              "&:hover": {
+                backgroundColor: "#1976d2",
+                color: "#fff",
+              },
+            }}
+            onClick={handleCloseEdit}
+          >
+            <Close />
+          </IconButton>
+          <Box display="flex" mt={3} justifyContent="center">
+            <Button
+              variant="contained"
+              sx={{ mr: 2 }}
+              onClick={formEditDataUploadServer}
+            >
+              Cập nhật
+            </Button>
+            <Button variant="contained" onClick={handleCloseEdit} color="error">
+              Hủy
+            </Button>
+          </Box>
+        </Box>
+      </Modal>
 
-                        {!!dataList && dataList.map((item, index) => {
-                            return (
-                                <option value={item.id} key={index}>
-                                    {item.typeName}
-                                </option>
-                            );
-                        })}
+      {/* xoa */}
+      <Modal open={openDelete} onClose={handleCloseDelete}>
+        <Box sx={{ ...style }}>
+          <Typography
+            align="center"
+            fontSize="25px"
+            fontWeight={500}
+            letterSpacing="1px"
+            textTransform="uppercase"
+            color="primary"
+          >
+            Xoá sản phẩm
+          </Typography>
+          <Typography align="center" mb={1} mt={3}>
+            Bạn có chắc chắn xoá sản phẩm {dataDelete?.productName}
+          </Typography>
+          <IconButton
+            sx={{
+              position: "absolute",
+              top: "-15px",
+              right: "-10px",
+              width: "30px",
+              height: "30px",
+              borderRadius: "50%",
+              border: "1px solid #1976d2",
+              color: "#1976d2",
+              backgroundColor: "#fff",
 
-                    </select>
-                </div>
+              "&:hover": {
+                backgroundColor: "#1976d2",
+                color: "#fff",
+              },
+            }}
+            onClick={handleCloseDelete}
+          >
+            <Close />
+          </IconButton>
+          <Box display="flex" mt={3} justifyContent="center">
+            <Button variant="contained" onClick={deleteBrand} sx={{ mr: 2 }}>
+              Xoá
+            </Button>
+            <Button
+              variant="contained"
+              onClick={handleCloseDelete}
+              color="error"
+            >
+              Hủy
+            </Button>
+          </Box>
+        </Box>
+      </Modal>
 
-                <div className="textimageBrand"> Ảnh Product: </div>
-                <input type="file" multiple onChange={handleChangeImages} />
+      <ProductModal
+        open={openInfor}
+        onCloseModal={handleCloseInfor}
+        product={productInfor}
+      />
 
-                <div className="groupButtonBrand">
-                    <div onClick={handleClose}>
-                        <Button variant="contained" variant="outlined" >Hủy Tạo</Button> </div>
-                    <div>   <Button variant="contained" onClick={formDataUploadServer} >Tạo mới</Button> </div>
-                </div>
-
-            </Box>
-
-        </Modal>
-
-        {/* edit */}
-
-
-        <Modal
-            open={openEdit}
-            onClose={handleCloseEdit}
-            aria-labelledby="parent-modal-title"
-            aria-describedby="parent-modal-description"
-        >
-            <Box sx={{ ...style, width: 400 }}>
-                <h2 id="parent-modal-title">Sửa product</h2>
-
-                <TextField
-                    id="standard-textarea"
-                    label="Thêm tên product mới "
-                    placeholder="..."
-                    multiline
-                    variant="standard"
-                    className="inputBrand"
-                    name="productName"
-                    value={formEdit.productName}
-                    onChange={onChangInputEdit}
-                />
-
-                <TextField
-
-                    label="Giá product mới "
-                    placeholder="..."
-                    multiline
-                    variant="standard"
-                    className="inputBrand"
-                    type="number"
-                    name="productPrice"
-                    value={formEdit.productPrice}
-                    onChange={onChangInputEdit}
-                />
-
-                <TextField
-
-                    label="Giảm product mới "
-                    placeholder="..."
-                    type="number"
-                    multiline
-                    variant="standard"
-                    className="inputBrand"
-                    name="discount"
-                    value={formEdit.discount}
-                    onChange={onChangInputEdit}
-                />
-
-                <TextField
-                    id="standard-textarea"
-                    label="Slug "
-                    placeholder="..."
-                    multiline
-                    variant="standard"
-                    className="inputBrand"
-                    name="slug"
-                    value={formEdit.slug}
-                    onChange={onChangInputEdit}
-                />
-
-                <TextField
-                    id="standard-textarea"
-                    label="summary"
-                    placeholder="..."
-                    multiline
-                    variant="standard"
-                    className="inputBrand"
-                    name="summary"
-                    value={formEdit.summary}
-                    onChange={onChangInputEdit}
-                />
-
-                <div className="optionBrand">
-                    <label>Danh sách Product</label>
-                    <select name="typeId" value={formEdit.typeId} onChange={onChangInputEdit}>
-
-                        {!!dataList && dataList.map((item, index) => {
-                            return (
-                                <option value={item.id} key={index}>
-                                    {item.typeName}
-                                </option>
-                            );
-                        })}
-
-                    </select>
-                </div>
-                <div className="imageProduct">Ảnh product </div>
-                <div className='grimage'>
-
-                    <br />
-                    {console.log(formEdit.image)}
-                    {
-                        !!formEdit.image && (formEdit.image).map((e, index) => {
-                            return (
-                                <div className="grIconimage" key={index}>
-                                    <ClearIcon className="icondelete" onClick={()=>deleteImageOle(e)} />
-                                    <img src={e} alt="error" className="imgavatarbrand" />
-                                </div>
-                            )
-                        })
-                    }
-
-                </div>
-
-                <div className="imageProduct">Thêm ảnh</div>
-
-                <input type="file" multiple onChange={handleChangeImages} />
-
-
-                <div className="groupButtonBrand">
-                    <div >
-                        <Button variant="contained" variant="outlined" onClick={handleCloseEdit}>Hủy Sửa</Button> </div>
-                    <div>   <Button variant="contained" onClick={formEditDataUploadServer} >Đồng ý</Button> </div>
-                </div>
-
-            </Box>
-
-        </Modal>
-
-
-        {/* xoa */}
-
-        <Modal
-            open={openDelete}
-            onClose={handleCloseDelete}
-            aria-labelledby="parent-modal-title"
-            aria-describedby="parent-modal-description"
-        >
-            <Box sx={{ ...style, width: 400 }}>
-                <h2 id="parent-modal-title">Bạn có chắc chắn xóa brand này không</h2>
-                <div className="groupButtonBrand">
-                    <div >
-                        <Button variant="contained" variant="outlined" onClick={handleCloseDelete}>Hủy bỏ </Button> </div>
-                    <div>   <Button variant="contained" onClick={deleteBrand} >Đồng ý</Button> </div>
-                </div>
-
-            </Box>
-
-        </Modal>
-
-    </div>
-);
+      <SizeModal open={openSize} onClose={handleCloseSize} />
+    </Box>
+  );
 }

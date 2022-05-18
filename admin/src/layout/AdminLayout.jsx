@@ -9,6 +9,8 @@ import { Header } from "./Header";
 import { Sidebar } from "./Sidebar";
 import VoucherPage from "../components/Voucher";
 import UserPage from "../components/User/Table";
+import ProductTable from "../components/Product/Table";
+import BlogPage from "../components/Blog/Table";
 
 const AdminLayout = () => {
   const match = useRouteMatch();
@@ -37,6 +39,12 @@ const AdminLayout = () => {
           </Route>
           <Route path={Path.VOUCHER}>
             <VoucherPage />
+          </Route>
+          <Route path={Path.PRODUCT}>
+            <ProductTable />
+          </Route>
+          <Route path={Path.BLOG}>
+            <BlogPage />
           </Route>
           <Route path={match.path}>
             <HomePage />

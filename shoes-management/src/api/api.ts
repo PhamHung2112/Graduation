@@ -14,7 +14,7 @@ const authInterceptor = (request: AxiosRequestConfig) => {
 
   const token = localStorage.getItem(STORAGE_KEY.TOKEN);
   if (token) {
-    requestConfig.headers.Authorization = `Bearer ${token}`;
+    requestConfig.headers.Authorization = `Bearer ${JSON.parse(token as string)}`;
   }
 
   return requestConfig;

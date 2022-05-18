@@ -36,7 +36,6 @@ class TypeService {
       });
       return res.status(200).send({ types: types });
     } catch (err) {
-      console.log(err);
       // Send Error
       if (err) res.sendStatus(403);
     }
@@ -58,7 +57,6 @@ class TypeService {
       });
       return res.status(200).send({ types: types });
     } catch (err) {
-      console.log(err);
       if (err) res.sendStatus(403);
     }
   };
@@ -66,7 +64,6 @@ class TypeService {
   // Create Type
   create = async (req, res) => {
     const body = req.body;
-    console.log({ body });
 
     // Create Type
     try {

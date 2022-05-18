@@ -82,8 +82,6 @@ const CartTableItem: FC<CartTableItemProps> = ({ setTotalMoney }) => {
     setproductList(a);
   };
 
-  console.log('productList')
-  console.log(productList)
   return (
     <>
       {productList?.map((product: any, index: number) => (
@@ -115,7 +113,7 @@ const CartTableItem: FC<CartTableItemProps> = ({ setTotalMoney }) => {
             >
               <Link to={`/product/${product.id}`}>{product.name}</Link>
               <Typography color="#959595" fontSize="14px">
-                {product?.size!=0? product?.size: product?.productSizes[0]?.size?.sizeNumber}
+                {product?.size !== 0 ? product?.size : product?.productSizes[0]?.size?.sizeNumber}
               </Typography>
             </Box>
           </TableCell>

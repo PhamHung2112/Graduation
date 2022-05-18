@@ -73,7 +73,8 @@ const CartTableItem: FC<CartTableItemProps> = ({ setTotalMoney, voucher }) => {
             >
               <Link to={`/product/${product.id}`}>{product.name}</Link>
               <Typography color="#959595" fontSize="14px">
-                {product?.productSizes[0]?.amount}
+                {/* {product?.productSizes[0]?.amount} */}
+                {product?.size}
               </Typography>
             </Box>
           </TableCell>

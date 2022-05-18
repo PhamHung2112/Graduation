@@ -14,15 +14,15 @@ export default function ListMenu({ options }) {
       {options.map((option, index) => (
         <Box
           key={index}
-          sx={(theme) => ({
+          sx={{
             "& > a.active > li > div": {
-              backgroundColor: theme.palette.primary.main,
+              backgroundColor: "#1976d2",
 
               "& > div": {
                 color: "#fff",
               },
             },
-          })}
+          }}
         >
           <NavLink
             to={option.path}

@@ -28,8 +28,7 @@ const ProductInfor: FC<ProductInforProps> = ({ product }) => {
         const res = await api.get('productSize/' + product?.id);
         if (res?.data) {
           setSizes(res.data?.sizes);
-          console.log('getValues')
-          setValue('size',res.data?.sizes[0])
+          setValue('size', res.data?.sizes[0]);
         }
       } catch (error) {
         toast.error('Không lấy được size giày');
@@ -190,7 +189,7 @@ const ProductInfor: FC<ProductInforProps> = ({ product }) => {
             textColor="#ff871d"
             margin="0 15px 0 0"
             onClick={() => {
-              FcLocalStrogate(product,getValues('size'));
+              FcLocalStrogate(product, getValues('size'));
             }}
             disabled={sizes.length > 0 ? false : true}
           >

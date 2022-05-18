@@ -1,13 +1,17 @@
-import { yupResolver } from "@hookform/resolvers/yup";
-import { Close } from "@mui/icons-material";
 import { Box, Button, IconButton, Modal, Typography } from "@mui/material";
-import React from "react";
 import { useForm } from "react-hook-form";
 import * as yup from "yup";
+import { yupResolver } from "@hookform/resolvers/yup";
 import { InputField } from "../../common/FormFields/InputFields";
+import { Close } from "@mui/icons-material";
+import { useEffect } from "react";
 
 const schema = yup.object().shape({
-  typeName: yup.string().required("Vui lòng nhập tên loại thương hiệu"),
+  sizeNumber: yup
+    .number()
+    .required("Vui lòng nhập size giày")
+    .min(30, "Size nhỏ nhất là 30")
+    .max(49, "Size lớn nhất là 49"),
 });
 
 const style = {
@@ -15,34 +19,32 @@ const style = {
   top: "50%",
   left: "50%",
   transform: "translate(-50%, -50%)",
-  width: 600,
+  width: 500,
   bgcolor: "background.paper",
   boxShadow: 24,
   padding: "40px",
   borderRadius: "6px",
 };
 
-export default function EditTypeModal({ open, onCloseModal, onSubmit, type }) {
-  const initialValues = {
-    typeName: type.typeName,
-  };
-
-  const { control, handleSubmit, reset } = useForm({
-    defaultValues: initialValues,
+const SizeEdit = ({ open, onClose, size, onSubmit }) => {
+  const { control, handleSubmit, setValue } = useForm({
+    defaultValues: {
+      sizeNumber: 0,
+    },
     resolver: yupResolver(schema),
   });
 
-  const handleFormSubmit = async (formValues) => {
-    onSubmit(formValues);
-    reset();
-  };
+  useEffect(() => {
+    setValue("sizeNumber", size.sizeNumber);
+  }, [size]);
 
-  const handleCloseModal = () => {
-    onCloseModal();
+  const handleFormSubmit = (formValues) => {
+    const values = { ...formValues, id: size.id };
+    onSubmit(values);
   };
 
   return (
-    <Modal open={open} onClose={onCloseModal}>
+    <Modal open={open} onClose={onClose}>
       <Box
         component="form"
         onSubmit={handleSubmit(handleFormSubmit)}
@@ -53,17 +55,13 @@ export default function EditTypeModal({ open, onCloseModal, onSubmit, type }) {
           fontSize="30px"
           fontWeight={500}
           letterSpacing="1px"
-          mb={3}
+          mb={1}
           textTransform="uppercase"
           color="primary"
         >
-          Cập nhật loại thương hiệu
+          Cập nhật size giày
         </Typography>
-        <InputField
-          control={control}
-          name="typeName"
-          label="Tên loại thương hiệu"
-        />
+        <InputField control={control} name="sizeNumber" label="Size giày" />
         <IconButton
           sx={{
             position: "absolute",
@@ -81,19 +79,21 @@ export default function EditTypeModal({ open, onCloseModal, onSubmit, type }) {
               color: "#fff",
             },
           }}
-          onClick={handleCloseModal}
+          onClick={onClose}
         >
           <Close />
         </IconButton>
         <Box display="flex" mt={3} justifyContent="center">
-          <Button variant="contained" sx={{ mr: 2 }} type="submit">
+          <Button variant="contained" type="submit" sx={{ mr: 2 }}>
             Cập nhật
           </Button>
-          <Button variant="contained" onClick={onCloseModal} color="error">
+          <Button variant="contained" onClick={onClose} color="error">
             Hủy
           </Button>
         </Box>
       </Box>
     </Modal>
   );
-}
+};
+
+export default SizeEdit;

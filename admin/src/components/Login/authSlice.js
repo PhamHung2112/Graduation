@@ -38,9 +38,6 @@ const authSlice = createSlice({
       localStorage.setItem("user", JSON.stringify(payload));
       Cookies.set("cookieLogin", payload.token);
     });
-    builder.addCase(login.rejected, (state, action) => {
-      console.log(action.payload);
-    });
   },
 });
 

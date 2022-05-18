@@ -21,13 +21,12 @@ const ForgotPasswordForm: FC<ForgotPasswordFormProps> = ({ initialValues, onSubm
     resolver: yupResolver(forgotPasswordSchema),
   });
 
-  const handleFormSubmit = async(formValues: ForgotPasswordPayload) => {
+  const handleFormSubmit = async (formValues: ForgotPasswordPayload) => {
     try {
-      
-      const res = await axios.post("http://localhost:5000/api/auth/forgot-password", formValues)
-      toast.success(res.data.message)
-    } catch (error:any) {
-      toast.error(error.response.data.message)
+      const res = await axios.post('http://localhost:5000/api/auth/forgot-password', formValues);
+      toast.success(res.data.message);
+    } catch (error: any) {
+      toast.error(error.response.data.message);
     }
   };
 

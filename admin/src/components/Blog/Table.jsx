@@ -1,83 +1,84 @@
-import React, { useState, useRef, useEffect } from "react";
-import Table from "@mui/material/Table";
-import TableBody from "@mui/material/TableBody";
-import TableCell from "@mui/material/TableCell";
-import TableContainer from "@mui/material/TableContainer";
-import TableHead from "@mui/material/TableHead";
-import TableRow from "@mui/material/TableRow";
-import Button from '@mui/material/Button';
-import Paper from "@mui/material/Paper";
-import Box from '@mui/material/Box';
-import Modal from '@mui/material/Modal';
-import "./Table.css";
-import Pagination from '@mui/material/Pagination';
-import Stack from '@mui/material/Stack';
-import TextField from '@mui/material/TextField';
-import EditSharpIcon from '@mui/icons-material/EditSharp';
-import PhotoIcon from '@mui/icons-material/Photo';
-import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
-import { creatBrand, getBrand, deleteBrandApi, editBrandApi, updateBrandApi, createBlog } from "../../api/apiClient"
-import { ToastContainer, toast } from 'react-toastify';
+import { Add, Close, Delete, Edit } from "@mui/icons-material";
+import PhotoIcon from "@mui/icons-material/Photo";
+import {
+  Breadcrumbs,
+  IconButton,
+  Pagination,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
+  Tooltip,
+  Typography,
+} from "@mui/material";
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import Modal from "@mui/material/Modal";
+import TextField from "@mui/material/TextField";
+import React, { useEffect, useRef, useState } from "react";
+import { toast } from "react-toastify";
+import { createBlog } from "../../api/apiClient";
+import blogApi from "../../api/blogApi";
 import { imageUpload } from "../../helper/imageUpload";
 import TextEditor from "../Editor/Editor";
 const style = {
-  position: 'absolute',
-  top: '50%',
-  left: '50%',
-  transform: 'translate(-50%, -50%)',
+  position: "absolute",
+  top: "50%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
   width: 400,
-  bgcolor: 'background.paper',
+  bgcolor: "background.paper",
   boxShadow: 24,
   pt: 2,
   px: 4,
   pb: 3,
 };
 
-export default function BasicTable() {
+export default function BlogPage() {
   const [open, setOpen] = React.useState(false);
-  const [images, setImages] = useState([])
+  const [images, setImages] = useState([]);
+  const [blogList, setBlogList] = useState([]);
+  const [page, setPage] = useState(1);
+  const [totalPage, setTotalPage] = useState(1);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await blogApi.getAll(8, page);
+        setBlogList(res.blogs.rows);
+        setTotalPage(res.blogs.count);
+      } catch (error) {
+        toast.error("Lấy thông tin tin tức thất bại");
+      }
+    })();
+  }, [page]);
+
   const handleOpen = () => {
     setOpen(true);
   };
   const handleClose = () => {
     setOpen(false);
   };
-  const [dataList, setDataList] = useState()
-  const [callList, setCallList] = useState(false)
-  const callApiList = async () => {
-    const data = await getBrand()
-    setDataList(data.data.brands.rows)
-
-  }
-
-  useEffect(() => {
-    try {
-      callApiList()
-    } catch (error) {
-      toast.error(error.response.data.message)
-    }
-
-  }, [callList])
 
   const [baseImage, setBaseImage] = useState({
     img: null,
   });
-  const [fileUp, setFileUp] = useState()
   const targetupload = useRef(null);
   //image
-  const handleChangeImages = e => {
-    const files = [...e.target.files]
-    let err = ""
-    let newImages = []
-    files.forEach(file => {
-      if (!file) return err = "File does not exist."
+  const handleChangeImages = (e) => {
+    const files = [...e.target.files];
+    let err = "";
+    let newImages = [];
+    files.forEach((file) => {
+      if (!file) return (err = "File does not exist.");
 
       if (file.size > 1024 * 1024 * 5) {
-        return err = "The image largest is 5mb."
+        return (err = "The image largest is 5mb.");
       }
 
-      return newImages.push(file)
-    })
+      return newImages.push(file);
+    });
     const reader = new FileReader();
     reader.onload = () => {
       if (reader.readyState === 2) {
@@ -86,255 +87,214 @@ export default function BasicTable() {
     };
     reader.readAsDataURL(e.target.files[0]);
     if (err) {
-      console.log("err roi nhe!")
+      console.log("err roi nhe!");
     }
-    setImages([...images, ...newImages])
-  }
+    setImages([...images, ...newImages]);
+  };
 
   //bsse create
 
   const [form, setForm] = useState({
-    title: '',
-    summary: '',
-    content:''
-  })
+    title: "",
+    summary: "",
+    content: "",
+  });
   const onChangInput = (e) => {
     var target = e.target;
     var name = target.name;
     var value = target.value;
-    console.log(name+value)
     setForm({ ...form, [name]: value });
   };
 
   //end
 
-
-
   const formDataUploadServer = async () => {
-
     try {
-
-      if ((form.title).length > 1 && (form.summary).length > 1) {
-
+      if (form.title.length > 1 && form.summary.length > 1) {
         const res = await imageUpload(images);
         const data = {
           image: res[0].url,
-          ...form
-        }
-        await createBlog(data)
-        setBaseImage('')
-        toast.success("Tạo blog thành công")
-        setCallList(!callList)
-        setOpen(false)
+          ...form,
+        };
+        await createBlog(data);
+        setBaseImage("");
+        toast.success("Tạo blog thành công");
+        setOpen(false);
       } else {
-        toast.error("Tất cả các trường phải có")
+        toast.error("Tất cả các trường phải có");
       }
     } catch (error) {
-      toast.error(error)
+      toast.error(error);
     }
-  }
+  };
 
-  const [id, setId] = useState()
-  const [openDelete, setOpenDelete] = useState(false)
-  const openDeleteRow = (id) => {
-    setOpenDelete(true)
-    setId(id)
-  }
-  const handleCloseDelete = () => {
-    setOpenDelete(false)
-  }
-  const deleteBrand = async () => {
-    try {
-      await deleteBrandApi(id)
-      setOpenDelete(false)
-      setCallList(!callList)
-      toast.success("Xóa brand thành công")
-    } catch (error) {
-
-    }
-
-  }
-
-  //
-
-  const [dataEdit, setDataEdit] = useState({
-    brandName: '',
-    slug: '',
-    image: '',
-    id:id
-  })
-  const [openEdit, setOpenEdit] = useState(false)
-  const openEditRow = async (id) => {
-    try {
-      setOpenEdit(true)
-      setId(id)
-      const data = await editBrandApi(id)
-      setDataEdit({
-        brandName: data.data.brand.brandName,
-        slug: data.data.brand.slug,
-        image: data.data.brand.image,
-        id:id
-      })
-    } catch (error) {
-
-    }
-
-  }
-
-  const onChangInputEdit = (e) => {
-    var target = e.target;
-    var name = target.name;
-    var value = target.value;
-    setDataEdit({ ...dataEdit, [name]: value });
-  }
-  const handleCloseEdit = () => {
-    setOpenEdit(false)
-  }
-  const formEditDataUploadServer = async () => {
-    console.log(baseImage)
-    try {
-      if (baseImage.img !=null &&(dataEdit.brandName).length > 1 && (dataEdit.slug).length > 1) {
-        const res = await imageUpload(images);
-        const data = {
-          image: res[0].url,
-          brandName: dataEdit.brandName,
-          slug: dataEdit.slug,
-          id:id
-        }
-        await updateBrandApi(data)
-        setBaseImage('')
-        toast.success("Sửa brand thành công")
-        setOpenEdit(false)
-        setCallList(!callList)
-      }
-      else if((dataEdit.brandName).length > 1 && (dataEdit.slug).length > 1) {
-        const data = {
-          image: dataEdit.image,
-          brandName: dataEdit.brandName,
-          slug: dataEdit.slug,
-          id:id
-        }
-        await updateBrandApi(data)
-        setBaseImage('')
-        toast.success("Sửa brand thành công")
-        setOpenEdit(false)
-        setCallList(!callList)
-      }
-      else {
-        toast.error("Tất cả các trường phải có")
-      }
-
-
-    } catch (error) {
-
-    }
-
-  }
-
-  const handleChangeContent=(newState) => {
+  const handleChangeContent = (newState) => {
     setForm({ ...form, content: newState });
-    console.log(newState)
+  };
+
+  const handleChangePage = (e, page) => {
+    setPage(page);
+  };
+
+  const [openEdit, setOpenEdit] = useState(false);
+  const [formEdit, setFormEdit] = useState({
+    title: "",
+    content: "",
+    image: "",
+    summary: "",
+  });
+
+  const handleCloseEdit = () => setOpenEdit(false);
+  const handleOpenEdit = (blog) => {
+    setOpenEdit(true);
+    setFormEdit({
+      title: blog.title,
+      content: blog.content,
+      summary: blog.summary,
+      image: blog.image,
+    });
   }
 
   return (
-    <div className="TableBrand">
-      <ToastContainer
-        position="top-right"
-        autoClose={1000}
-        closeOnClick />
-      <div className="brandCreate" onClick={handleOpen}>
-        <Button variant="contained" >Tạo blog mới</Button>
-      </div>
+    <Box margin="100px 30px 0 30px">
+      <Box display="flex" justifyContent="space-between" alignItems="center">
+        <Box>
+          <Typography variant="h5" fontWeight={500} marginBottom="15px">
+            Quản lý tin tức
+          </Typography>
+          <Breadcrumbs aria-label="breadcrumb">
+            <Typography color="inherit">Trang chủ</Typography>
+            <Typography color="primary" fontWeight={500}>
+              Tin tức
+            </Typography>
+          </Breadcrumbs>
+        </Box>
+        <Box display="flex">
+          <Button
+            variant="contained"
+            startIcon={<Add />}
+            color="primary"
+            sx={{ mr: 2 }}
+            onClick={handleOpen}
+          >
+            Thêm tin tức
+          </Button>
+        </Box>
+      </Box>
+      <Box margin="20px 0 40px">
+        <Table
+          sx={{
+            border: "1px solid #e2e2e2",
 
-
-      <div className="TableBrandScroll">
-        <TableContainer
-          component={Paper}
-          style={{ boxShadow: "0px 13px 20px 0px #80808029" }}
+            "& .MuiTableCell-head": {
+              borderRight: "1px solid #e2e2e2",
+              fontWeight: 600,
+            },
+          }}
         >
-          <Table sx={{ minWidth: 650 }} aria-label="simple table">
-            <TableHead>
-              <TableRow>
-                <TableCell>brand Name</TableCell>
-                <TableCell align="left">Slug</TableCell>
-                <TableCell align="left">Avatar</TableCell>
-                <TableCell align="left">Date</TableCell>
-                <TableCell align="left">Status</TableCell>
-
-
-              </TableRow>
-            </TableHead>
-            <TableBody style={{ color: "white" }}>
-              {!!dataList && dataList.map((row) => (
+          <TableHead>
+            <TableRow>
+              <TableCell>#</TableCell>
+              <TableCell>Tiêu đề</TableCell>
+              <TableCell align="center">Ảnh tin tức</TableCell>
+              <TableCell align="center">Mô tả</TableCell>
+              <TableCell align="center">Ngày tạo</TableCell>
+              <TableCell align="center"></TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {blogList &&
+              blogList.length > 0 &&
+              blogList.map((row) => (
                 <TableRow
                   key={row.id}
                   sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
                 >
-                  <TableCell component="th" scope="row">
-                    {row.brandName}
+                  <TableCell>{row.id}</TableCell>
+                  <TableCell>{row.title}</TableCell>
+                  <TableCell align="center">
+                    <img src={row.image} alt="" width={100} height={100} />
                   </TableCell>
-                  <TableCell align="left">{row.slug}</TableCell>
-
-                  <TableCell align="left"><img src={row.image} alt="error" className="imgavatarbrand" /></TableCell>
-                  <TableCell align="left"> {(row.createdAt).slice(0, 10)}  </TableCell>
-
-                  <TableCell align="left">
-                    <div className="groupIcon">
-                      <DeleteForeverIcon className="icondelete" onClick={() => openDeleteRow(row.id)} />
-                      < EditSharpIcon className="iconedit" onClick={() => openEditRow(row.id)} />
-                    </div>
+                  <TableCell align="center">{row.summary}</TableCell>
+                  <TableCell align="center">
+                    {row?.createdAt
+                      ? new Date(row?.createdAt).toLocaleString()
+                      : ""}
+                  </TableCell>
+                  <TableCell align="center">
+                    <Tooltip
+                      title="Sửa tin tức"
+                      placement="top"
+                      arrow
+                      disableInteractive
+                    >
+                      <IconButton color="primary" sx={{ mr: 1 }} onClick={() => handleOpenEdit(row)}>
+                        <Edit />
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip
+                      title="Xoá tin tức"
+                      placement="top"
+                      arrow
+                      disableInteractive
+                    >
+                      <IconButton color="primary" sx={{ mr: 1 }}>
+                        <Delete color="error" />
+                      </IconButton>
+                    </Tooltip>
                   </TableCell>
                 </TableRow>
               ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      </div>
-      {/* <Stack spacing={2}>
-        <Pagination count={10} color="primary" />
-      </Stack> */}
-
-
-      {/* Create */}
+          </TableBody>
+        </Table>
+      </Box>
       <Modal
         open={open}
         onClose={handleClose}
-        aria-labelledby="parent-modal-title"
-        aria-describedby="parent-modal-description"
       >
-        <Box sx={{ ...style, width: 1200, position:'relative' }}>
-          <h2 id="parent-modal-title">Tạo Blog</h2>
+        <Box sx={{ ...style, width: 1200, position: "relative" }}>
+          <Typography
+            align="center"
+            fontSize="30px"
+            fontWeight={500}
+            letterSpacing="1px"
+            mb={1}
+            textTransform="uppercase"
+            color="primary"
+          >
+            Thêm mới tin tức
+          </Typography>
 
           <TextField
-            id="standard-textarea"
-            label="Tiêu đề blog"
-            placeholder="..."
+            label="Tiêu đề"
             multiline
-            variant="standard"
-            className="inputBrand"
+            variant="outlined"
             name="title"
             value={form.title}
             onChange={onChangInput}
+            fullWidth
+            margin="normal"
           />
           <TextField
-            id="standard-textarea"
             label="Tóm tắt"
-            placeholder="..."
             multiline
-            variant="standard"
-            className="inputBrand"
+            variant="outlined"
             name="summary"
             value={form.summary}
             onChange={onChangInput}
+            fullWidth
+            margin="normal"
           />
           <div className="textimageBrand"> Content: </div>
-          <div style={{
-            height:380,
-            marginTop:5,
-            // marginBottom:30,
-            paddingBottom:50,
-          }}>
-            <TextEditor  onEditorStateChange={handleChangeContent}/>
+          <div
+            style={{
+              height: 380,
+              marginTop: 5,
+              // marginBottom:30,
+              paddingBottom: 50,
+            }}
+          >
+            <TextEditor onEditorStateChange={handleChangeContent} />
           </div>
 
           <div className="textimageBrand"> Ảnh blog : </div>
@@ -343,11 +303,11 @@ export default function BasicTable() {
             onClick={() => targetupload.current.click()}
           >
             {baseImage.img === null ? (
-             <>
-             <PhotoIcon/>
-             </>
+              <>
+                <PhotoIcon />
+              </>
             ) : (
-              <img src={baseImage.img} width="100" height="100" />
+              <img src={baseImage.img} width="100" height="100" alt="" />
             )}
           </div>
           <input
@@ -360,68 +320,102 @@ export default function BasicTable() {
             className="inputImage"
           />
 
-          <div className="groupButtonBrand">
-            <div onClick={handleClose}>
-              <Button  variant="outlined" >Hủy Tạo</Button> </div>
-            <div>   <Button variant="contained" onClick={formDataUploadServer} >Tạo mới</Button> </div>
-          </div>
+          <IconButton
+            sx={{
+              position: "absolute",
+              top: "-15px",
+              right: "-10px",
+              width: "30px",
+              height: "30px",
+              borderRadius: "50%",
+              border: "1px solid #1976d2",
+              color: "#1976d2",
+              backgroundColor: "#fff",
 
+              "&:hover": {
+                backgroundColor: "#1976d2",
+                color: "#fff",
+              },
+            }}
+            onClick={handleClose}
+          >
+            <Close />
+          </IconButton>
+          <Box display="flex" mt={3} justifyContent="center">
+            <Button
+              variant="contained"
+              sx={{ mr: 2 }}
+              onClick={formDataUploadServer}
+            >
+              Thêm mới
+            </Button>
+            <Button variant="contained" onClick={handleClose} color="error">
+              Hủy
+            </Button>
+          </Box>
         </Box>
-
       </Modal>
-
-      {/* edit */}
-
 
       <Modal
         open={openEdit}
         onClose={handleCloseEdit}
-        aria-labelledby="parent-modal-title"
-        aria-describedby="parent-modal-description"
       >
-        <Box sx={{ ...style, width: 400 }}>
-          <h2 id="parent-modal-title">Sửa brand</h2>
-
-          <TextField
-            id="standard-textarea"
-            label="Thêm brand mới "
-            placeholder="..."
-            multiline
-            variant="standard"
-            className="inputBrand"
-            name="brandName"
-            value={dataEdit.brandName}
-            onChange={onChangInputEdit}
-          />
-
-          <TextField
-            id="standard-textarea"
-            label="Thêm slug"
-            placeholder="..."
-            multiline
-            variant="standard"
-            className="inputBrand"
-            name="slug"
-            value={dataEdit.slug}
-            onChange={onChangInputEdit}
-          />
-
-          <div className="textimageBrand"> Ảnh brand cũ : </div>
-          <div
-            className="imgbrand"
+        <Box sx={{ ...style, width: 1200, position: "relative" }}>
+          <Typography
+            align="center"
+            fontSize="30px"
+            fontWeight={500}
+            letterSpacing="1px"
+            mb={1}
+            textTransform="uppercase"
+            color="primary"
           >
-            <img src={dataEdit.image} width="100" height="100" />
+            Cập nhật tin tức
+          </Typography>
+
+          <TextField
+            label="Tiêu đề"
+            multiline
+            variant="outlined"
+            name="title"
+            value={form.title}
+            onChange={onChangInput}
+            fullWidth
+            margin="normal"
+          />
+          <TextField
+            label="Tóm tắt"
+            multiline
+            variant="outlined"
+            name="summary"
+            value={form.summary}
+            onChange={onChangInput}
+            fullWidth
+            margin="normal"
+          />
+          <div className="textimageBrand"> Content: </div>
+          <div
+            style={{
+              height: 380,
+              marginTop: 5,
+              // marginBottom:30,
+              paddingBottom: 50,
+            }}
+          >
+            <TextEditor onEditorStateChange={handleChangeContent} content={formEdit.content} />
           </div>
 
-          <div className="textimageBrand"> Ảnh brand mới : </div>
+          <div className="textimageBrand"> Ảnh blog : </div>
           <div
             className="imgbrand"
             onClick={() => targetupload.current.click()}
           >
             {baseImage.img === null ? (
-              ""
+              <>
+                <PhotoIcon />
+              </>
             ) : (
-              <img src={baseImage.img} width="100" height="100" />
+              <img src={baseImage.img} width="100" height="100" alt="" />
             )}
           </div>
           <input
@@ -434,37 +428,60 @@ export default function BasicTable() {
             className="inputImage"
           />
 
-          <div className="groupButtonBrand">
-            <div >
-              <Button  variant="outlined" onClick={handleCloseEdit}>Hủy Sửa</Button> </div>
-            <div>   <Button variant="contained" onClick={formEditDataUploadServer} >Đồng ý</Button> </div>
-          </div>
+          <IconButton
+            sx={{
+              position: "absolute",
+              top: "-15px",
+              right: "-10px",
+              width: "30px",
+              height: "30px",
+              borderRadius: "50%",
+              border: "1px solid #1976d2",
+              color: "#1976d2",
+              backgroundColor: "#fff",
 
+              "&:hover": {
+                backgroundColor: "#1976d2",
+                color: "#fff",
+              },
+            }}
+            onClick={handleCloseEdit}
+          >
+            <Close />
+          </IconButton>
+          <Box display="flex" mt={3} justifyContent="center">
+            <Button
+              variant="contained"
+              sx={{ mr: 2 }}
+              onClick={formDataUploadServer}
+            >
+              Thêm mới
+            </Button>
+            <Button variant="contained" onClick={handleCloseEdit} color="error">
+              Hủy
+            </Button>
+          </Box>
         </Box>
-
       </Modal>
 
-
-      {/* xoa */}
-
-      <Modal
-        open={openDelete}
-        onClose={handleCloseDelete}
-        aria-labelledby="parent-modal-title"
-        aria-describedby="parent-modal-description"
+      <Box
+        marginBottom="40px"
+        width="100%"
+        sx={{
+          "& > nav": {
+            justifyContent: "center",
+            width: "100%",
+            display: "flex",
+          },
+        }}
       >
-        <Box sx={{ ...style, width: 400 }}>
-          <h2 id="parent-modal-title">Bạn có chắc chắn xóa brand này không</h2>
-          <div className="groupButtonBrand">
-            <div >
-              <Button  variant="outlined" onClick={handleCloseDelete}>Hủy bỏ </Button> </div>
-            <div>   <Button variant="contained" onClick={deleteBrand} >Đồng ý</Button> </div>
-          </div>
-
-        </Box>
-
-      </Modal>
-
-    </div>
+        <Pagination
+          color="primary"
+          count={Math.ceil(totalPage / 8)}
+          page={page}
+          onChange={handleChangePage}
+        />
+      </Box>
+    </Box>
   );
 }

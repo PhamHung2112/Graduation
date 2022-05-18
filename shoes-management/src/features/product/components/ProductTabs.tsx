@@ -27,9 +27,10 @@ const icons = [
 
 export interface ProductTabsProps {
   product?: Product;
+  brandName: string;
 }
 
-const ProductTabs: FC<ProductTabsProps> = ({ product }) => {
+const ProductTabs: FC<ProductTabsProps> = ({ product, brandName }) => {
   const [activeTab, setActiveTab] = useState<number>(0);
 
   return (
@@ -84,7 +85,7 @@ const ProductTabs: FC<ProductTabsProps> = ({ product }) => {
       <Box padding="40px 0 30px">
         <Container maxWidth={activeTab > 1 ? 'xl' : 'lg'}>
           {activeTab === 0 ? (
-            <ProductDescription product={product} />
+            <ProductDescription product={product} brandName={brandName} />
           ) : activeTab === 1 ? (
             <Box textAlign="center">
               <img src={ChooseSizeImage} alt="choose-size" />

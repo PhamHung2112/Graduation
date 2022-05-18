@@ -8,6 +8,7 @@ import ProductFeatured from '../components/ProductFeatured';
 import ProductInfor from '../components/ProductInfor';
 import ProductSlider from '../components/ProductSlider';
 import ProductTabs from '../components/ProductTabs';
+import { toast } from 'react-toastify';
 
 const ProductDetailPage: FC = () => {
   const [product, setProduct] = useState<Product>();
@@ -27,7 +28,7 @@ const ProductDetailPage: FC = () => {
         };
         setProduct(cast);
       } catch (error) {
-        console.log(error);
+        toast.error('Lấy danh sách sản phẩm không thành công');
       }
     };
     getProduct();
@@ -39,15 +40,15 @@ const ProductDetailPage: FC = () => {
       try {
         const getBrand = async () => {
           const res = await api.get('type/get-brand/' + tmp?.typeId);
-          console.log(res);
           setBrand(res.data?.types?.brand);
         };
         getBrand();
       } catch (error) {
-        console.log(error);
+        toast.error('Lấy tên thương hiệu không thành công');
       }
     }
   }, [product]);
+
   return (
     <Container maxWidth="xl">
       <Box
@@ -62,7 +63,7 @@ const ProductDetailPage: FC = () => {
       >
         <Breadcrumbs aria-label="breadcrumb">
           <Link to={HomeEnumPath.HOMEPAGE}>Trang chủ</Link>
-          <Link to={'/brand/' + brand?.id}>{brand?.brandName ? brand?.brandName : 'no-brand'}</Link>
+          <Link to={'/brand/' + brand?.id}>{brand?.brandName ? brand?.brandName : ''}</Link>
           <Typography color="secondary">{product?.name}</Typography>
         </Breadcrumbs>
       </Box>
@@ -75,7 +76,7 @@ const ProductDetailPage: FC = () => {
         </Grid>
       </Grid>
       <ProductFeatured />
-      <ProductTabs product={product} />
+      <ProductTabs product={product} brandName={brand?.brandName} />
     </Container>
   );
 };

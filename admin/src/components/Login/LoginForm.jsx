@@ -36,7 +36,7 @@ export default function LoginForm({ initialValues, onSubmit }) {
           flexFlow: "row-reverse nowrap",
           alignItems: "center",
           border: 1,
-          borderColor: (theme) => theme.palette.divider,
+          borderColor: "#e2e2e2",
           boxShadow: 1,
           padding: "30px",
         }}

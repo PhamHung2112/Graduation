@@ -9,9 +9,10 @@ import { FC } from 'react';
 
 export interface ProductDescriptionProps {
   product?: Product;
+  brandName: string;
 }
 
-const ProductDescription: FC<ProductDescriptionProps> = ({ product }) => {
+const ProductDescription: FC<ProductDescriptionProps> = ({ product, brandName }) => {
   return (
     <Table
       sx={{
@@ -25,7 +26,7 @@ const ProductDescription: FC<ProductDescriptionProps> = ({ product }) => {
       <TableBody>
         <TableRow>
           <TableCell variant="head">Thương hiệu</TableCell>
-          <TableCell>Converse</TableCell>
+          <TableCell>{brandName}</TableCell>
         </TableRow>
         <TableRow>
           <TableCell variant="head">Xuất xứ thương hiệu</TableCell>

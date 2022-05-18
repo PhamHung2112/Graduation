@@ -62,6 +62,7 @@ const login = async (req, res) => {
       phoneNumber: datauser.phoneNumber,
       address: datauser.address,
       id: idUser,
+      active: datauser.active,
     };
     return res.json({ message: data });
   } catch (err) {
