@@ -18,7 +18,7 @@ export interface ProductInforProps {
 const ProductInfor: FC<ProductInforProps> = ({ product }) => {
   const [sizes, setSizes] = useState<number[]>([]);
   const dispatch = useAppDispatch();
-  const { control, setValue, getValues } = useForm({
+  const { control, setValue, getValues, handleSubmit } = useForm({
     defaultValues: {
       amount: 1,
       size: 36,
@@ -39,6 +39,11 @@ const ProductInfor: FC<ProductInforProps> = ({ product }) => {
     };
     getSizes();
   }, []);
+
+  const handleFormSumit = (values: any) => {
+    FcLocalStrogate(product, +values.size, +values.amount);
+    dispatch(cartActions.updateAmountCart());
+  };
 
   return (
     <Box display="flex" flexDirection="column">
@@ -99,7 +104,7 @@ const ProductInfor: FC<ProductInforProps> = ({ product }) => {
           {product.summary}
         </Typography>
       </Box>
-      <Box component="form" my={3}>
+      <Box component="form" my={3} onSubmit={handleSubmit(handleFormSumit)}>
         <Box display="flex" alignItems="flex-end" mb={4}>
           <Typography
             fontSize="16px"
@@ -162,7 +167,7 @@ const ProductInfor: FC<ProductInforProps> = ({ product }) => {
             >
               <Remove />
             </Button>
-            <InputField control={control} name="amount" />
+            <InputField control={control} name="amount" readOnly />
             <Button
               variant="contained"
               sx={(theme) => ({
@@ -191,11 +196,8 @@ const ProductInfor: FC<ProductInforProps> = ({ product }) => {
             borderColor="#ff871d"
             textColor="#ff871d"
             margin="0 15px 0 0"
-            onClick={() => {
-              FcLocalStrogate(product, getValues('size'));
-              dispatch(cartActions.updateAmountCart());
-            }}
             disabled={sizes.length > 0 ? false : true}
+            type="submit"
           >
             Thêm vào giỏ hàng
           </CustomMuiButton>

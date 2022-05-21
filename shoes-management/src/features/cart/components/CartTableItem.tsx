@@ -9,12 +9,12 @@ import {
   Theme,
   Typography,
 } from '@mui/material';
+import { useAppDispatch } from 'app/hooks';
 import { FC, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Product } from '../../../constants';
 import { toast } from 'react-toastify';
 import { LocalKey, LocalStorage } from 'ts-localstorage';
-import { useAppDispatch } from 'app/hooks';
+import { Product } from '../../../constants';
 import { cartActions } from '../redux/cartSlice';
 
 export interface CartTableItemProps {
@@ -49,11 +49,23 @@ const CartTableItem: FC<CartTableItemProps> = ({ setTotalMoney }) => {
     setTotalMoney(count);
   };
 
-  const deletItemCard = (id: number) => {
+  const deletItemCard = (id: number, size: number) => {
     const key = new LocalKey('cart', '');
     const dataLC: any = LocalStorage.getItem(key);
     const count: any = JSON.parse(dataLC);
-    const dataNewAfterDelete = count.filter((item: any) => item.id !== id);
+    console.log('count');
+    console.log(count);
+    console.log('id');
+    console.log(id);
+    console.log('size');
+    console.log(size);
+    const dataNewAfterDelete = count.filter((item: any) => {
+      if (item.id !== id) {
+        return item.id !== id;
+      }
+
+      return item.size !== size;
+    });
     if (dataNewAfterDelete.length > 0) {
       LocalStorage.setItem(key, JSON.stringify(dataNewAfterDelete));
     } else {
@@ -85,9 +97,8 @@ const CartTableItem: FC<CartTableItemProps> = ({ setTotalMoney }) => {
     moneyTotal();
     setproductList(a);
   };
-
+  console.log('productList');
   console.log(productList);
-
   return (
     <>
       {productList?.map((product: any, index: number) => (
@@ -200,7 +211,7 @@ const CartTableItem: FC<CartTableItemProps> = ({ setTotalMoney }) => {
             </Typography>
           </TableCell>
           <TableCell align="center">
-            <IconButton onClick={() => deletItemCard(product.id)}>
+            <IconButton onClick={() => deletItemCard(product.id, product.size)}>
               <Delete />
             </IconButton>
           </TableCell>

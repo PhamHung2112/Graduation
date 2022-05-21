@@ -48,7 +48,7 @@ const PaypalButtonWrapper: FC<PaypalButtonWrapperProps> = ({ total, voucher }) =
         productId: i.id,
         amount: i.count,
         total: i.price * i.count - (i.price * i.count * i.discount) / 100,
-        size: i.productSizes[0].size.sizeNumber,
+        size: i.size,
       };
     });
     try {

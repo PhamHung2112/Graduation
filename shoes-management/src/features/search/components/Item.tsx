@@ -12,6 +12,7 @@ import { Product } from '../../../constants';
 import { ProductItemControl } from '../../home/constants/home.constants';
 import ProductSlider from './ProductSlider';
 import { cartActions } from 'features/cart/redux/cartSlice';
+import { FcLocalStrogate } from 'helpers/action';
 export interface ProductItemProps {
   product: Product;
   productColumn?: number;
@@ -56,36 +57,6 @@ const Item: FC<ProductItemProps> = ({ product }) => {
   const handleOpenModal = () => setOpenModal(true);
   const handleCloseModal = () => setOpenModal(false);
   const dispatch = useAppDispatch();
-
-  const FcLocalStrogate = (data: any) => {
-    dispatch(cartActions.updateAmountCart());
-    const key = new LocalKey('array', '');
-    const dataLC: any = LocalStorage.getItem(key);
-    const a = JSON.parse(dataLC) || [];
-    let check = 0;
-    if (dataLC?.length > 0) {
-      for (var i = 0; i < a.length; i++) {
-        if (a[i].id === data.id) {
-          a[i].count = a[i].count + 1;
-          check = 1;
-          LocalStorage.setItem(key, JSON.stringify(a));
-          toast.success('Thêm sản phẩm vào giỏ hàng thành công');
-          return;
-        }
-      }
-      if (check === 0) {
-        const dataPush = { ...data, count: 1 };
-        a.push(dataPush);
-        LocalStorage.setItem(key, JSON.stringify(a));
-        toast.success('Thêm sản phẩm vào giỏ hàng thành công');
-      }
-    } else {
-      const dataPush = { ...data, count: 1 };
-      a.push(dataPush);
-      LocalStorage.setItem(key, JSON.stringify(a));
-      toast.success('Thêm sản phẩm vào giỏ hàng thành công');
-    }
-  };
 
   const updateTim = (data: any) => {
     const key = new LocalKey('array', '');
@@ -216,6 +187,7 @@ const Item: FC<ProductItemProps> = ({ product }) => {
                   margin="0 10px"
                   onClick={() => {
                     FcLocalStrogate(product);
+                    dispatch(cartActions.updateAmountCart());
                   }}
                 >
                   <ShoppingBagOutlined />

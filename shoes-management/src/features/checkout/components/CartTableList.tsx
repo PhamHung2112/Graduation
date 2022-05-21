@@ -59,7 +59,7 @@ const CartTableList: FC = () => {
         productId: i.id,
         amount: i.count,
         total: i.price * i.count - (i.price * i.count * i.discount) / 100,
-        size: i.productSizes[0].size.sizeNumber,
+        size: i.size,
       };
     });
 
@@ -103,8 +103,9 @@ const CartTableList: FC = () => {
     try {
       const response = await api.get(`voucher/all?search=${formValues.voucherName}`);
       setVoucher(response.data.vouchers.rows[0]);
+      toast.success('Áp dụng mã giảm giá thành công');
     } catch (error) {
-      toast.error('Voucher không tồn tại');
+      toast.error('Mã giảm giá không tồn tại');
     }
   };
 

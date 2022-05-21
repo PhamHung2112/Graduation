@@ -1,7 +1,7 @@
 import { toast } from 'react-toastify';
 import { LocalKey, LocalStorage } from 'ts-localstorage';
 
-export const FcLocalStrogate = (data: any, size = 0) => {
+export const FcLocalStrogate = (data: any, size = 0, amount = 1) => {
   const key = new LocalKey('cart', '');
   const dataLC: any = LocalStorage.getItem(key);
   const a = JSON.parse(dataLC) || [];
@@ -9,7 +9,7 @@ export const FcLocalStrogate = (data: any, size = 0) => {
   if (dataLC?.length > 0) {
     for (var i = 0; i < a.length; i++) {
       if (a[i].id === data.id && a[i]?.size == size) {
-        a[i].count = a[i].count + 1;
+        a[i].count = a[i].count + amount;
         check = 1;
         LocalStorage.setItem(key, JSON.stringify(a));
         toast.success('Thêm sản phẩm vào giỏ hàng thành công');
@@ -17,7 +17,7 @@ export const FcLocalStrogate = (data: any, size = 0) => {
       }
     }
     if (check === 0) {
-      const dataPush = { ...data, count: 1, size: size };
+      const dataPush = { ...data, count: amount, size: size };
       a.push(dataPush);
       LocalStorage.setItem(key, JSON.stringify(a));
       toast.success('Thêm sản phẩm vào giỏ hàng thành công');
