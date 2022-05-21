@@ -2,9 +2,25 @@
   margin-bottom: 80px;
   overflow-y: auto;
   height: 300px;
+  border: 1px solid rgba(0, 0, 0, 0.23);
+  border-top: 0;
 }
 
-.rdw-editor-wrapper{
-  height: 100%;
+.rdw-editor-main::-webkit-scrollbar {
+  width: 8px;
+}
+.rdw-editor-main::-webkit-scrollbar-track {
+  display: none;
+}
+.rdw-editor-main::-webkit-scrollbar-thumb {
+  background-color: #cccccc;
+  border-radius: 8px;
+}
 
+.rdw-editor-toolbar {
+  border: 1px solid rgba(0, 0, 0, 0.23);
+}
+
+.rdw-editor-wrapper {
+  height: 100%;
 }

@@ -4,26 +4,19 @@
  * description: exporting the router for the authentication routes.
  */
 
-const router = require('express').Router();
-const AuthService = require(__basedir + '/services/AuthService');
+const router = require("express").Router();
+const AuthService = require(__basedir + "/services/AuthService");
 
 // Register Route
-router.post('/register', AuthService.register);
+router.post("/register", AuthService.register);
 
 // Login Route
-router.post('/login', AuthService.login);
-router.post('/forgot-password', AuthService.forgotPassword);
-router.post('/update-password/:tokencheck', AuthService.updatePassword);
-router.get('/list-user', AuthService.getUser);
+router.post("/login", AuthService.login);
+router.post("/forgot-password", AuthService.forgotPassword);
+router.post("/update-password/:tokencheck", AuthService.updatePassword);
+router.get("/list-user", AuthService.getUser);
 
-
-router.post('/active', AuthService.activeUser);
-
-
-
-
-
-
+router.post("/active", AuthService.activeUser);
 
 // // Authenticated Route
 // router.get('/authenticate', AuthService.authenticate);

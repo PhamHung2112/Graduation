@@ -2,7 +2,7 @@ import axiosClient from "./axiosClient";
 
 const blogApi = {
   getAll(limit, page) {
-    const url = `blog/all?limit=${limit}&&page=${page - 1}`;
+    const url = `blog/all?limit=${limit}&page=${page - 1}`;
     return axiosClient.get(url);
   },
   getById(id) {

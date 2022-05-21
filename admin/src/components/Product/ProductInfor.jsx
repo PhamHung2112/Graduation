@@ -11,8 +11,6 @@ const ProductInfor = ({ product, open, onClose, onOpen, onSubmit }) => {
   const [sizeList, setSizeList] = useState([]);
   const [type, setType] = useState();
 
-  console.log(product);
-
   const sizeProduct = product?.ProductSizes.reduce((prev, acc) => {
     const sizeNumber = acc.Size.sizeNumber;
     prev.push(sizeNumber);

@@ -4,6 +4,7 @@ import Logo from 'assets/image/logo.png';
 import axios from 'axios';
 import { InputField, PasswordField } from 'components';
 import { AuthEnumsPath, RegisterPayload, registerSchema } from 'features/auth/auth';
+import { HomeEnumPath } from 'features/home/home';
 import { FC } from 'react';
 import { useForm } from 'react-hook-form';
 import { Link, useHistory } from 'react-router-dom';
@@ -52,7 +53,9 @@ const RegisterForm: FC<RegisterFormProps> = ({ initialValues, onSubmit }) => {
     <Box width="500px" padding="50px" margin="auto">
       <Box width="95%" margin="0 auto" textAlign="center">
         <Box paddingBottom="20px" borderBottom="1px solid #ccc">
-          <img src={Logo} alt="logo" width={160} />
+          <Link to={HomeEnumPath.HOMEPAGE}>
+            <img src={Logo} alt="logo" width={160} />
+          </Link>
         </Box>
 
         <Typography

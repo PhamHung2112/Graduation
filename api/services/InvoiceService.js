@@ -1,5 +1,6 @@
 const { Op } = require("sequelize");
-const { Invoice, Type } = require(__basedir + "/models");
+const { Invoice, Type, User, InvoiceDetail, Voucher } = require(__basedir +
+  "/models");
 class InvoiceService {
   get = async (req, res) => {
     const { id } = req.params;
@@ -11,20 +12,51 @@ class InvoiceService {
     }
   };
 
+  getByUserId = async (req, res) => {
+    const { id } = req.params;
+    try {
+      const invoices = await Invoice.findAndCountAll({
+        attributes: ["id", "voucherId", "userId", "total", "payment"],
+        where: {
+          userId: id,
+        },
+        include: [
+          {
+            model: User,
+          },
+          {
+            model: InvoiceDetail,
+          },
+          {
+            model: Voucher,
+          },
+        ],
+      });
+      return res.status(200).send({ invoices: invoices });
+    } catch (err) {
+      // Send Error
+      if (err) return res.status(403).send({ error: err });
+    }
+  };
+
   // Get All Invoices
   getAll = async (req, res) => {
     const { page = 0, limit = 10, search = "" } = req.query;
     try {
       const invoices = await Invoice.findAndCountAll({
+        attributes: ["id", "voucherId", "userId", "total", "payment"],
         distinct: true,
-        where: {
-          invoiceName: { [Op.like]: `%${search}%` },
-        },
         offset: +(limit * page),
         limit: +limit,
         include: [
           {
-            model: Type,
+            model: User,
+          },
+          {
+            model: InvoiceDetail,
+          },
+          {
+            model: Voucher,
           },
         ],
       });

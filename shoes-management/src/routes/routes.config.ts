@@ -8,6 +8,7 @@ import { CHECKOUT_ROUTES } from 'features/checkout/checkout';
 import { CONTACT_ROUTES } from 'features/contact/contact';
 import { FAVORITE_ROUTES } from 'features/favorite/favorite';
 import { HOME_ROUTES } from 'features/home/home';
+import { INVOICES_ROUTES } from 'features/invoices/invoices';
 import { PRODUCT_DETAIL_ROUTES } from 'features/product/product';
 import { SEARCH_ROUTES } from 'features/search/search';
 
@@ -27,4 +28,5 @@ export const ROUTE_LIST = [
   ...SEARCH_ROUTES,
   ...FAVORITE_ROUTES,
   ...CHECKOUT_ROUTES,
+  ...INVOICES_ROUTES,
 ];

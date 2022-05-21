@@ -14,6 +14,8 @@ import { Link } from 'react-router-dom';
 import { Product } from '../../../constants';
 import { toast } from 'react-toastify';
 import { LocalKey, LocalStorage } from 'ts-localstorage';
+import { useAppDispatch } from 'app/hooks';
+import { cartActions } from '../redux/cartSlice';
 
 export interface CartTableItemProps {
   productList?: Product[];
@@ -23,6 +25,7 @@ export interface CartTableItemProps {
 const CartTableItem: FC<CartTableItemProps> = ({ setTotalMoney }) => {
   const [productList, setproductList] = useState<any>([]);
   const [total, setTotal] = useState<any>(0);
+  const dispatch = useAppDispatch();
   useEffect(() => {
     const key = new LocalKey('cart', '');
     const dataLC: any = LocalStorage.getItem(key);
@@ -58,9 +61,10 @@ const CartTableItem: FC<CartTableItemProps> = ({ setTotalMoney }) => {
       window.location.reload();
     }
 
-    toast.error('Xóa sản phẩm thành công ');
+    toast.error('Xóa sản phẩm thành công');
     moneyTotal();
     setproductList(dataNewAfterDelete);
+    dispatch(cartActions.updateAmountCart());
   };
 
   const setDataCard = (index: number, b: boolean) => {
@@ -81,6 +85,8 @@ const CartTableItem: FC<CartTableItemProps> = ({ setTotalMoney }) => {
     moneyTotal();
     setproductList(a);
   };
+
+  console.log(productList);
 
   return (
     <>

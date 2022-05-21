@@ -121,7 +121,6 @@ const ChangeInformationForm: FC<ChangeInformationFormProps> = ({ initialValues, 
             </Button>
           </Box>
         </Box>
-        <ToastContainer position="top-right" autoClose={3000} closeOnClick />
       </Box>
     );
   else return <></>;

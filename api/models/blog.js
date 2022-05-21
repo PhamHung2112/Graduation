@@ -15,10 +15,10 @@ module.exports = (sequelize, DataTypes) => {
   };
   Blog.init({
     title: DataTypes.STRING,
-    content: DataTypes.STRING,
+    content: DataTypes.TEXT,
     releaseDate: DataTypes.DATE,
     image: DataTypes.STRING,
-    summary: DataTypes.STRING
+    summary: DataTypes.TEXT
   }, {
     sequelize,
     modelName: 'Blog',

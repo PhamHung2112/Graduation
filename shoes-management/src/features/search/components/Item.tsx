@@ -1,6 +1,7 @@
 import { FavoriteBorder, Search, ShoppingBagOutlined } from '@mui/icons-material';
 import { Box, Grid, Typography } from '@mui/material';
 import { keyframes } from '@mui/system';
+import { useAppDispatch } from 'app/hooks';
 import { CustomMuiIconButton } from 'components';
 import ProductModal from 'features/product/components/ProductModal';
 import { FC, Fragment, memo, useState } from 'react';
@@ -10,7 +11,7 @@ import { LocalKey, LocalStorage } from 'ts-localstorage';
 import { Product } from '../../../constants';
 import { ProductItemControl } from '../../home/constants/home.constants';
 import ProductSlider from './ProductSlider';
-
+import { cartActions } from 'features/cart/redux/cartSlice';
 export interface ProductItemProps {
   product: Product;
   productColumn?: number;
@@ -54,8 +55,10 @@ const Item: FC<ProductItemProps> = ({ product }) => {
   const [callList, setCallList] = useState(false);
   const handleOpenModal = () => setOpenModal(true);
   const handleCloseModal = () => setOpenModal(false);
+  const dispatch = useAppDispatch();
 
   const FcLocalStrogate = (data: any) => {
+    dispatch(cartActions.updateAmountCart());
     const key = new LocalKey('array', '');
     const dataLC: any = LocalStorage.getItem(key);
     const a = JSON.parse(dataLC) || [];

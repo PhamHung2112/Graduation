@@ -20,7 +20,7 @@ export default function LoginPage() {
       if (user.role === "user") {
         toast.error("Tên đăng nhập hoặc mật khẩu không chính xác");
       } else {
-        history.push(Path.HOME_PAGE);
+        history.push(Path.DASHBOARD);
       }
     } catch (error) {
       toast.error("Tên đăng nhập hoặc mật khẩu không chính xác");

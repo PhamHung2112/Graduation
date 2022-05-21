@@ -3,7 +3,6 @@ import {
   Category,
   Dashboard,
   FileCopy,
-  Home,
   Inventory,
   LocationCity,
   People,
@@ -14,11 +13,6 @@ import { Path } from "../constants/path";
 import ListMenu from "./ListMenu";
 
 const MAIN_MENU = [
-  {
-    icon: <Home />,
-    label: "Homepage",
-    path: Path.HOME_PAGE,
-  },
   {
     icon: <Dashboard />,
     label: "Dashboard",

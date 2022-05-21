@@ -45,7 +45,7 @@ export default function BlogPage() {
   useEffect(() => {
     (async () => {
       try {
-        const res = await blogApi.getAll(8, page);
+        const res = await blogApi.getAll(4, page);
         setBlogList(res.blogs.rows);
         setTotalPage(res.blogs.count);
       } catch (error) {
@@ -87,7 +87,7 @@ export default function BlogPage() {
     };
     reader.readAsDataURL(e.target.files[0]);
     if (err) {
-      console.log("err roi nhe!");
+      toast.error(err);
     }
     setImages([...images, ...newImages]);
   };
@@ -118,8 +118,17 @@ export default function BlogPage() {
         };
         await createBlog(data);
         setBaseImage("");
-        toast.success("Tạo blog thành công");
+        toast.success("Tạo tin tức thành công");
         setOpen(false);
+        (async () => {
+          try {
+            const res = await blogApi.getAll(8, page);
+            setBlogList(res.blogs.rows);
+            setTotalPage(res.blogs.count);
+          } catch (error) {
+            toast.error("Lấy thông tin tin tức thất bại");
+          }
+        })();
       } else {
         toast.error("Tất cả các trường phải có");
       }
@@ -142,8 +151,14 @@ export default function BlogPage() {
     content: "",
     image: "",
     summary: "",
+    id: "",
   });
-
+  const onChangInputEdit = (e) => {
+    const target = e.target;
+    const name = target.name;
+    const value = target.value;
+    setFormEdit({ ...formEdit, [name]: value });
+  };
   const handleCloseEdit = () => setOpenEdit(false);
   const handleOpenEdit = (blog) => {
     setOpenEdit(true);
@@ -152,8 +167,63 @@ export default function BlogPage() {
       content: blog.content,
       summary: blog.summary,
       image: blog.image,
+      id: blog.id,
     });
-  }
+  };
+
+  const formDataEditUploadServer = async () => {
+    try {
+      if (formEdit.title.length > 1 && formEdit.summary.length > 1) {
+        const res = await imageUpload(images);
+        const data = {
+          image: res[0].url,
+          ...formEdit,
+        };
+        await blogApi.update(data);
+        setBaseImage("");
+        toast.success("Cập nhật tin tức thành công");
+        setOpenEdit(false);
+        (async () => {
+          try {
+            const res = await blogApi.getAll(8, page);
+            setBlogList(res.blogs.rows);
+            setTotalPage(res.blogs.count);
+          } catch (error) {
+            toast.error("Lấy thông tin tin tức thất bại");
+          }
+        })();
+      } else {
+        toast.error("Tất cả các trường phải có");
+      }
+    } catch (error) {
+      toast.error(error);
+    }
+  };
+
+  const [openDelete, setOpenDelete] = useState(false);
+  const [dataDelete, setDataDelete] = useState();
+  const handleOpenDelete = (blog) => {
+    setDataDelete(blog);
+    setOpenDelete(true);
+  };
+  const handleCloseDelete = () => setOpenDelete(false);
+
+  const handleDeleteBlog = async () => {
+    try {
+      await blogApi.delete(dataDelete.id);
+      setOpenDelete(false);
+      toast.success("Xóa tin tức thành công");
+      (async () => {
+        try {
+          const res = await blogApi.getAll(8, page);
+          setBlogList(res.blogs.rows);
+          setTotalPage(res.blogs.count);
+        } catch (error) {
+          toast.error("Lấy thông tin tin tức thất bại");
+        }
+      })();
+    } catch (error) {}
+  };
 
   return (
     <Box margin="100px 30px 0 30px">
@@ -213,7 +283,7 @@ export default function BlogPage() {
                   <TableCell>{row.id}</TableCell>
                   <TableCell>{row.title}</TableCell>
                   <TableCell align="center">
-                    <img src={row.image} alt="" width={100} height={100} />
+                    <img src={row.image} alt="" width={140} height={140} />
                   </TableCell>
                   <TableCell align="center">{row.summary}</TableCell>
                   <TableCell align="center">
@@ -228,7 +298,11 @@ export default function BlogPage() {
                       arrow
                       disableInteractive
                     >
-                      <IconButton color="primary" sx={{ mr: 1 }} onClick={() => handleOpenEdit(row)}>
+                      <IconButton
+                        color="primary"
+                        sx={{ mr: 1 }}
+                        onClick={() => handleOpenEdit(row)}
+                      >
                         <Edit />
                       </IconButton>
                     </Tooltip>
@@ -238,7 +312,11 @@ export default function BlogPage() {
                       arrow
                       disableInteractive
                     >
-                      <IconButton color="primary" sx={{ mr: 1 }}>
+                      <IconButton
+                        color="primary"
+                        sx={{ mr: 1 }}
+                        onClick={() => handleOpenDelete(row)}
+                      >
                         <Delete color="error" />
                       </IconButton>
                     </Tooltip>
@@ -248,10 +326,7 @@ export default function BlogPage() {
           </TableBody>
         </Table>
       </Box>
-      <Modal
-        open={open}
-        onClose={handleClose}
-      >
+      <Modal open={open} onClose={handleClose}>
         <Box sx={{ ...style, width: 1200, position: "relative" }}>
           <Typography
             align="center"
@@ -285,7 +360,9 @@ export default function BlogPage() {
             fullWidth
             margin="normal"
           />
-          <div className="textimageBrand"> Content: </div>
+          <Typography my={2} fontWeight={500}>
+            Nội dung
+          </Typography>
           <div
             style={{
               height: 380,
@@ -297,7 +374,9 @@ export default function BlogPage() {
             <TextEditor onEditorStateChange={handleChangeContent} />
           </div>
 
-          <div className="textimageBrand"> Ảnh blog : </div>
+          <Typography my={2} fontWeight={500}>
+            Ảnh tin tức
+          </Typography>
           <div
             className="imgbrand"
             onClick={() => targetupload.current.click()}
@@ -307,7 +386,7 @@ export default function BlogPage() {
                 <PhotoIcon />
               </>
             ) : (
-              <img src={baseImage.img} width="100" height="100" alt="" />
+              <img src={baseImage.img} width="100px" height="100px" alt="" />
             )}
           </div>
           <input
@@ -356,11 +435,26 @@ export default function BlogPage() {
         </Box>
       </Modal>
 
-      <Modal
-        open={openEdit}
-        onClose={handleCloseEdit}
-      >
-        <Box sx={{ ...style, width: 1200, position: "relative" }}>
+      <Modal open={openEdit} onClose={handleCloseEdit}>
+        <Box
+          sx={{
+            ...style,
+            width: 1200,
+            position: "relative",
+            height: "800px",
+            overflowY: "scroll",
+            "&::-webkit-scrollbar": {
+              width: "8px",
+            },
+            "&::-webkit-scrollbar-track": {
+              display: "none",
+            },
+            "&::-webkit-scrollbar-thumb": {
+              backgroundColor: "#cccccc",
+              borderRadius: "8px",
+            },
+          }}
+        >
           <Typography
             align="center"
             fontSize="30px"
@@ -378,8 +472,8 @@ export default function BlogPage() {
             multiline
             variant="outlined"
             name="title"
-            value={form.title}
-            onChange={onChangInput}
+            value={formEdit.title}
+            onChange={onChangInputEdit}
             fullWidth
             margin="normal"
           />
@@ -388,32 +482,40 @@ export default function BlogPage() {
             multiline
             variant="outlined"
             name="summary"
-            value={form.summary}
-            onChange={onChangInput}
+            value={formEdit.summary}
+            onChange={onChangInputEdit}
             fullWidth
             margin="normal"
           />
-          <div className="textimageBrand"> Content: </div>
+          <Typography my={2} fontWeight={500}>
+            Nội dung
+          </Typography>
           <div
             style={{
               height: 380,
               marginTop: 5,
-              // marginBottom:30,
               paddingBottom: 50,
             }}
           >
-            <TextEditor onEditorStateChange={handleChangeContent} content={formEdit.content} />
+            <TextEditor
+              onEditorStateChange={handleChangeContent}
+              content={formEdit.content}
+            />
+          </div>
+          <Typography my={2} fontWeight={500}>
+            Ảnh tin tức
+          </Typography>
+          <div className="imgbrand">
+            <img src={formEdit.image} width="100" height="100" alt="" />
           </div>
 
-          <div className="textimageBrand"> Ảnh blog : </div>
+          <div className="textimageBrand"> Ảnh thương hiệu mới : </div>
           <div
             className="imgbrand"
             onClick={() => targetupload.current.click()}
           >
             {baseImage.img === null ? (
-              <>
-                <PhotoIcon />
-              </>
+              ""
             ) : (
               <img src={baseImage.img} width="100" height="100" alt="" />
             )}
@@ -425,9 +527,38 @@ export default function BlogPage() {
             accept="image/*"
             onChange={handleChangeImages}
             // onChange={(e) => handleUpload(e)}
-            className="inputImage"
           />
 
+          <Box display="flex" mt={3} justifyContent="center">
+            <Button
+              variant="contained"
+              sx={{ mr: 2 }}
+              onClick={formDataEditUploadServer}
+            >
+              Cập nhật
+            </Button>
+            <Button variant="contained" onClick={handleCloseEdit} color="error">
+              Hủy
+            </Button>
+          </Box>
+        </Box>
+      </Modal>
+
+      <Modal open={openDelete} onClose={handleCloseDelete}>
+        <Box sx={{ ...style }}>
+          <Typography
+            align="center"
+            fontSize="25px"
+            fontWeight={500}
+            letterSpacing="1px"
+            textTransform="uppercase"
+            color="primary"
+          >
+            Xoá thương hiệu
+          </Typography>
+          <Typography align="center" mb={1} mt={3}>
+            Bạn có chắc chắn xoá tin tức {dataDelete?.title}
+          </Typography>
           <IconButton
             sx={{
               position: "absolute",
@@ -445,19 +576,23 @@ export default function BlogPage() {
                 color: "#fff",
               },
             }}
-            onClick={handleCloseEdit}
+            onClick={handleCloseDelete}
           >
             <Close />
           </IconButton>
           <Box display="flex" mt={3} justifyContent="center">
             <Button
               variant="contained"
+              onClick={handleDeleteBlog}
               sx={{ mr: 2 }}
-              onClick={formDataUploadServer}
             >
-              Thêm mới
+              Xoá
             </Button>
-            <Button variant="contained" onClick={handleCloseEdit} color="error">
+            <Button
+              variant="contained"
+              onClick={handleCloseDelete}
+              color="error"
+            >
               Hủy
             </Button>
           </Box>
@@ -477,7 +612,7 @@ export default function BlogPage() {
       >
         <Pagination
           color="primary"
-          count={Math.ceil(totalPage / 8)}
+          count={Math.ceil(totalPage / 4)}
           page={page}
           onChange={handleChangePage}
         />

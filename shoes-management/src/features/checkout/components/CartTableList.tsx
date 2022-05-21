@@ -1,9 +1,10 @@
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Box, Table, TableBody, TableCell, TableHead, TableRow } from '@mui/material';
 import { api } from 'api/api';
-import { useAppSelector } from 'app/hooks';
+import { useAppDispatch, useAppSelector } from 'app/hooks';
 import { RootState } from 'app/store';
 import { CustomMuiButton, InputField } from 'components';
+import { cartActions } from 'features/cart/redux/cartSlice';
 import { HomeEnumPath } from 'features/home/home';
 import { FC, useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -34,6 +35,7 @@ const CartTableList: FC = () => {
   const history = useHistory();
   const [totalMoney, setTotalMoney] = useState<number>(0);
   const [voucher, setVoucher] = useState<Voucher>();
+  const dispatch = useAppDispatch();
   const { control, handleSubmit } = useForm({
     defaultValues: {
       voucherName: '',
@@ -55,7 +57,9 @@ const CartTableList: FC = () => {
     const cartList = a.map((i: any) => {
       return {
         productId: i.id,
-        amount: i.price * i.count,
+        amount: i.count,
+        total: i.price * i.count - (i.price * i.count * i.discount) / 100,
+        size: i.productSizes[0].size.sizeNumber,
       };
     });
 
@@ -71,6 +75,7 @@ const CartTableList: FC = () => {
         voucherId,
         userId: parseInt(userId as string),
         total,
+        payment: 0,
       });
       if (res) {
         // get Id invoice for detailInvoice table
@@ -90,6 +95,7 @@ const CartTableList: FC = () => {
 
     localStorage.removeItem('cart');
     toast.success('Thanh toán đơn hàng thành công');
+    dispatch(cartActions.updateAmountCart());
     history.push(HomeEnumPath.HOMEPAGE);
   };
 
@@ -175,6 +181,7 @@ const CartTableList: FC = () => {
             borderColor="#000000"
             textColor="#000000"
             type="submit"
+            disabled={voucher?.id ? true : false}
           >
             Áp dụng
           </CustomMuiButton>

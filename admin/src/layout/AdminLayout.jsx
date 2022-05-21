@@ -1,9 +1,7 @@
 import { Box } from "@mui/material";
 import { Route } from "react-router-dom";
-import { useRouteMatch } from "react-router-dom";
 import { Switch } from "react-router-dom";
 import BrandPage from "../components/Brand/Table";
-import HomePage from "../components/Home/Homepage";
 import { Path } from "../constants/path";
 import { Header } from "./Header";
 import { Sidebar } from "./Sidebar";
@@ -11,10 +9,10 @@ import VoucherPage from "../components/Voucher";
 import UserPage from "../components/User/Table";
 import ProductTable from "../components/Product/Table";
 import BlogPage from "../components/Blog/Table";
+import InvoicePage from "../components/Invoices/Table";
+import DashboardPage from "../components/Dashboard";
 
 const AdminLayout = () => {
-  const match = useRouteMatch();
-
   return (
     <Box
       display="grid"
@@ -46,8 +44,11 @@ const AdminLayout = () => {
           <Route path={Path.BLOG}>
             <BlogPage />
           </Route>
-          <Route path={match.path}>
-            <HomePage />
+          <Route path={Path.INVOICE}>
+            <InvoicePage />
+          </Route>
+          <Route path={Path.DASHBOARD}>
+            <DashboardPage />
           </Route>
         </Switch>
       </Box>

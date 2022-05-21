@@ -9,6 +9,7 @@ import { useForm } from 'react-hook-form';
 import { Link } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
 import axios from 'axios';
+import { HomeEnumPath } from 'features/home/home';
 
 export interface ForgotPasswordFormProps {
   initialValues?: ForgotPasswordPayload;
@@ -34,7 +35,9 @@ const ForgotPasswordForm: FC<ForgotPasswordFormProps> = ({ initialValues, onSubm
     <Box width="500px" padding="50px" margin="auto">
       <Box width="95%" margin="0 auto" textAlign="center">
         <Box paddingBottom="20px" borderBottom="1px solid #ccc">
-          <img src={Logo} alt="logo" width={160} />
+          <Link to={HomeEnumPath.HOMEPAGE}>
+            <img src={Logo} alt="logo" width={160} />
+          </Link>
         </Box>
 
         <Typography

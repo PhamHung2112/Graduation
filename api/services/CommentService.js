@@ -34,7 +34,6 @@ class CommentService {
   // Create Comment
   create = async (req, res) => {
     const body = req.body;
-    console.log("body", body);
     // Create Comment
     try {
       const comment = await Comment.create(body);

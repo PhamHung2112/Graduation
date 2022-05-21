@@ -25,6 +25,7 @@ const ProductSlider: FC<ProductSliderProps> = ({ imageList = [], productId, chec
                 style={{
                   filter: checkSize ? 'none' : 'brightness(0.4)',
                   opacity: checkSize ? 1 : 0.8,
+                  maxHeight: '340px',
                 }}
               />
             </Link>

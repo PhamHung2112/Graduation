@@ -1,6 +1,7 @@
 import { yupResolver } from '@hookform/resolvers/yup';
 import {
   FavoriteBorder,
+  FileCopy,
   Logout,
   PersonOutlineOutlined,
   Search,
@@ -38,6 +39,8 @@ import { Link, useHistory } from 'react-router-dom';
 import { HeaderNav, HeaderPathEnum } from './constants/Header.path';
 import * as yup from 'yup';
 import { api } from 'api/api';
+import { InvoicesEnumPath } from 'features/invoices/invoices';
+import { selectCartAmount } from 'features/cart/redux/cartSlice';
 
 const schema = yup.object().shape({
   keyword: yup.string().required('Vui lòng nhập tên giày'),
@@ -52,7 +55,7 @@ export const Header: FC = () => {
   const history = useHistory();
   const dispatch = useAppDispatch();
   const open = Boolean(anchorEl);
-  const cartNumber = JSON.parse(localStorage.getItem('cart') as string)?.length || 0;
+  const cartNumber = useAppSelector(selectCartAmount);
   const { control } = useForm({
     defaultValues: {
       keyword: '',
@@ -221,6 +224,21 @@ export const Header: FC = () => {
         >
           <MenuItem onClick={() => history.push(AuthEnumsPath.CHANGE_INFORMATION)}>
             <Avatar /> Thông tin cá nhân
+          </MenuItem>
+          <MenuItem
+            onClick={() => history.push(InvoicesEnumPath.INVOICES)}
+            // sx={{ marginTop: '10px' }}
+          >
+            <FileCopy
+              sx={{
+                marginRight: '8px',
+                marginLeft: '-4px',
+                width: '32px',
+                height: '32px',
+                color: '#bdbdbd',
+              }}
+            />
+            Đơn hàng của bạn
           </MenuItem>
           <Divider />
           <MenuItem onClick={handleLogout}>

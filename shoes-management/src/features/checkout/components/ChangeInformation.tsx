@@ -98,7 +98,6 @@ const ChangeInformation: FC<ChangeInformationProps> = ({ onNextStep }) => {
             Quay về trang chủ
           </CustomMuiButton>
         </Box>
-        <ToastContainer position="top-right" autoClose={3000} closeOnClick />
       </Box>
     );
   else return <></>;

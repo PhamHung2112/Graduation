@@ -85,7 +85,7 @@ export default function BrandPage() {
     };
     reader.readAsDataURL(e.target.files[0]);
     if (err) {
-      console.log("err roi nhe!");
+      toast.error(err);
     }
     setImages([...images, ...newImages]);
   };

@@ -4,6 +4,7 @@ import Logo from 'assets/image/logo.png';
 import axios from 'axios';
 import { PasswordField } from 'components/FormElement/PasswordField';
 import { AuthEnumsPath, RecoverPasswordPayload, recoverPasswordSchema } from 'features/auth/auth';
+import { HomeEnumPath } from 'features/home/home';
 import { FC } from 'react';
 import { useForm } from 'react-hook-form';
 import { Link, useHistory, useParams } from 'react-router-dom';
@@ -38,7 +39,9 @@ const RecoverPasswordForm: FC<RecoverPasswordFormProps> = ({ initialValues, onSu
     <Box width="500px" padding="50px" margin="auto">
       <Box width="95%" margin="0 auto" textAlign="center">
         <Box paddingBottom="20px" borderBottom="1px solid #ccc">
-          <img src={Logo} alt="logo" width={160} />
+          <Link to={HomeEnumPath.HOMEPAGE}>
+            <img src={Logo} alt="logo" width={160} />
+          </Link>
         </Box>
 
         <Typography

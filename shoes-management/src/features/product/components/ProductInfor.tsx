@@ -8,6 +8,8 @@ import { useForm } from 'react-hook-form';
 import { api } from 'api/api';
 import { FcLocalStrogate, updateTim } from 'helpers/action';
 import { toast } from 'react-toastify';
+import { useAppDispatch } from 'app/hooks';
+import { cartActions } from 'features/cart/redux/cartSlice';
 
 export interface ProductInforProps {
   product: Product;
@@ -15,6 +17,7 @@ export interface ProductInforProps {
 
 const ProductInfor: FC<ProductInforProps> = ({ product }) => {
   const [sizes, setSizes] = useState<number[]>([]);
+  const dispatch = useAppDispatch();
   const { control, setValue, getValues } = useForm({
     defaultValues: {
       amount: 1,
@@ -190,6 +193,7 @@ const ProductInfor: FC<ProductInforProps> = ({ product }) => {
             margin="0 15px 0 0"
             onClick={() => {
               FcLocalStrogate(product, getValues('size'));
+              dispatch(cartActions.updateAmountCart());
             }}
             disabled={sizes.length > 0 ? false : true}
           >

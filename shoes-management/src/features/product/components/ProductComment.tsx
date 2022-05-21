@@ -1,15 +1,15 @@
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Box, Rating, Typography } from '@mui/material';
-import { CustomMuiButton, InputField } from 'components';
-import { Product } from '../../../constants';
-import { FC, SyntheticEvent, useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { commentSchema } from '../product';
+import { api } from 'api/api';
 import { useAppSelector } from 'app/hooks';
 import { RootState } from 'app/store';
-import { api } from 'api/api';
-import { toast } from 'react-toastify';
+import { CustomMuiButton, InputField } from 'components';
+import { FC, SyntheticEvent, useEffect, useState } from 'react';
+import { useForm } from 'react-hook-form';
 import { useParams } from 'react-router-dom';
+import { toast } from 'react-toastify';
+import { Product } from '../../../constants';
+import { commentSchema } from '../product';
 
 export interface ProductCommentProps {
   product?: Product;
@@ -47,20 +47,24 @@ const ProductComment: FC<ProductCommentProps> = ({ product }) => {
 
   const handleFormSubmit = async (values: string | any) => {
     const formValues = { ...values, rating, userId: user?.id, productId: +id };
-    try {
-      const res = await api.post('/comment/create', { ...formValues });
-      if (res.data) {
-        toast.success('Đánh giá sản phẩm thành công');
+    if (rating === 0) {
+      toast.error('Vui lòng đánh giá sản phẩm');
+    } else {
+      try {
+        const res = await api.post('/comment/create', { ...formValues });
+        if (res.data) {
+          toast.success('Đánh giá sản phẩm thành công');
+        }
+        reset();
+        setRating(0);
+        const getComment = async () => {
+          const res = await api.get('product/comments/' + parseInt(id));
+          setComment(res.data?.comments?.comments);
+        };
+        getComment();
+      } catch (error) {
+        toast.error('Đánh giá sản phẩm không thành công');
       }
-      reset();
-      setRating(0);
-      const getComment = async () => {
-        const res = await api.get('product/comments/' + parseInt(id));
-        setComment(res.data?.comments?.comments);
-      };
-      getComment();
-    } catch (error) {
-      toast.error('Đánh giá sản phẩm không thành công');
     }
   };
 
@@ -116,94 +120,121 @@ const ProductComment: FC<ProductCommentProps> = ({ product }) => {
           </CustomMuiButton>
         </Box>
       </Box>
-      <Box
-        display="flex"
-        flexDirection="column"
-        justifyContent="center"
-        marginTop="15px"
-        border="1px solid #e5e5e5"
-      >
+      <Box display="flex" flexDirection="column">
         <Box
           display="flex"
           flexDirection="column"
-          alignItems="center"
           justifyContent="center"
-          bgcolor="rgb(255 135 29 / 40%)"
-          padding="20px"
+          marginTop="15px"
+          border="1px solid #e5e5e5"
         >
-          <Typography fontSize="30px" marginBottom="5px" color="secondary">
-            {(ratingAVG / comment.length).toFixed(1) || 0}/5
-          </Typography>
-          <Rating
-            name="rating"
-            value={+(ratingAVG / comment.length).toFixed(1) || 0}
-            precision={0.5}
-            sx={{
-              fontSize: '40px',
-              color: (theme) => theme.palette.secondary.main,
-            }}
-            readOnly
-          />
-          <Typography margin="15px 0 20px" fontSize="14px" fontWeight={500}>
-            ({comment?.length || 0} đánh giá)
-          </Typography>
-          <Box display="flex" justifyContent="center">
-            <Box bgcolor="#ffffff" border="1px solid #e2e2e2" marginRight="30px" padding="5px 15px">
-              Tất cả ({comment?.length || 0})
-            </Box>
-            <Box bgcolor="#ffffff" border="1px solid #e2e2e2" marginRight="30px" padding="5px 15px">
-              5 sao ({rating5Star || 0})
-            </Box>
-            <Box bgcolor="#ffffff" border="1px solid #e2e2e2" marginRight="30px" padding="5px 15px">
-              4 sao ({rating4Star || 0})
-            </Box>
-            <Box bgcolor="#ffffff" border="1px solid #e2e2e2" marginRight="30px" padding="5px 15px">
-              3 sao ({rating3Star || 0})
-            </Box>
-            <Box bgcolor="#ffffff" border="1px solid #e2e2e2" marginRight="30px" padding="5px 15px">
-              2 sao ({rating2Star || 0})
-            </Box>
-            <Box bgcolor="#ffffff" border="1px solid #e2e2e2" padding="5px 15px">
-              1 sao ({rating1Star || 0})
+          <Box
+            display="flex"
+            flexDirection="column"
+            alignItems="center"
+            justifyContent="center"
+            bgcolor="rgb(255 135 29 / 40%)"
+            padding="20px"
+          >
+            <Typography fontSize="30px" marginBottom="5px" color="secondary">
+              {comment.length > 0 ? (ratingAVG / comment.length).toFixed(1) : 0}/5
+            </Typography>
+            <Rating
+              name="rating"
+              value={+(ratingAVG / comment.length).toFixed(1) || 0}
+              precision={0.5}
+              sx={{
+                fontSize: '40px',
+                color: (theme) => theme.palette.secondary.main,
+              }}
+              readOnly
+            />
+            <Typography margin="15px 0 20px" fontSize="14px" fontWeight={500}>
+              ({comment?.length || 0} đánh giá)
+            </Typography>
+            <Box display="flex" justifyContent="center">
+              <Box
+                bgcolor="#ffffff"
+                border="1px solid #e2e2e2"
+                marginRight="30px"
+                padding="5px 15px"
+              >
+                Tất cả ({comment?.length || 0})
+              </Box>
+              <Box
+                bgcolor="#ffffff"
+                border="1px solid #e2e2e2"
+                marginRight="30px"
+                padding="5px 15px"
+              >
+                5 sao ({rating5Star || 0})
+              </Box>
+              <Box
+                bgcolor="#ffffff"
+                border="1px solid #e2e2e2"
+                marginRight="30px"
+                padding="5px 15px"
+              >
+                4 sao ({rating4Star || 0})
+              </Box>
+              <Box
+                bgcolor="#ffffff"
+                border="1px solid #e2e2e2"
+                marginRight="30px"
+                padding="5px 15px"
+              >
+                3 sao ({rating3Star || 0})
+              </Box>
+              <Box
+                bgcolor="#ffffff"
+                border="1px solid #e2e2e2"
+                marginRight="30px"
+                padding="5px 15px"
+              >
+                2 sao ({rating2Star || 0})
+              </Box>
+              <Box bgcolor="#ffffff" border="1px solid #e2e2e2" padding="5px 15px">
+                1 sao ({rating1Star || 0})
+              </Box>
             </Box>
           </Box>
-        </Box>
-        <Box display="flex" flexDirection="column">
-          {comment && comment.length > 0
-            ? comment.map((i: any) => (
-                <Box
-                  key={i.id}
-                  display="flex"
-                  flexDirection="column"
-                  padding="20px"
-                  sx={{
-                    '&:not(:last-chid)': {
-                      borderBottom: '1px solid #e5e5e5',
-                    },
-                  }}
-                >
-                  <Box display="flex" alignItems="center">
-                    <Typography marginRight="15px" fontWeight={500}>
-                      {i?.user?.fullName}
+          <Box display="flex" flexDirection="column">
+            {comment && comment.length > 0
+              ? comment.map((i: any) => (
+                  <Box
+                    key={i.id}
+                    display="flex"
+                    flexDirection="column"
+                    padding="20px"
+                    sx={{
+                      '&:not(:last-child)': {
+                        borderBottom: '1px solid #e5e5e5',
+                      },
+                    }}
+                  >
+                    <Box display="flex" alignItems="center">
+                      <Typography marginRight="15px" fontWeight={500}>
+                        {i?.user?.fullName}
+                      </Typography>
+                      <Rating
+                        name="rating"
+                        value={i?.rating}
+                        readOnly
+                        precision={0.5}
+                        sx={{
+                          fontSize: '20px',
+                          color: (theme) => theme.palette.secondary.main,
+                        }}
+                      />
+                    </Box>
+                    <Typography margin="10px 0">{i?.content}</Typography>
+                    <Typography fontSize="12px" color="#272727">
+                      {i?.createdAt ? new Date(i?.createdAt).toLocaleString() : ''}
                     </Typography>
-                    <Rating
-                      name="rating"
-                      value={i?.rating}
-                      readOnly
-                      precision={0.5}
-                      sx={{
-                        fontSize: '20px',
-                        color: (theme) => theme.palette.secondary.main,
-                      }}
-                    />
                   </Box>
-                  <Typography margin="10px 0">{i?.content}</Typography>
-                  <Typography fontSize="12px" color="#272727">
-                    {i?.createdAt ? new Date(i?.createdAt).toLocaleString() : ''}
-                  </Typography>
-                </Box>
-              ))
-            : null}
+                ))
+              : null}
+          </Box>
         </Box>
       </Box>
     </Box>

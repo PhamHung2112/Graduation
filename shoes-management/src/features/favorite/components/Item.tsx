@@ -1,7 +1,9 @@
 import { FavoriteBorder, Search, ShoppingBagOutlined } from '@mui/icons-material';
 import { Box, Grid, Typography } from '@mui/material';
 import { keyframes } from '@mui/system';
+import { useAppDispatch } from 'app/hooks';
 import { CustomMuiIconButton } from 'components';
+import { cartActions } from 'features/cart/redux/cartSlice';
 import ProductModal from 'features/product/components/ProductModal';
 import { FC, Fragment, memo, useState } from 'react';
 import { Link } from 'react-router-dom';
@@ -54,8 +56,10 @@ const Item: FC<ProductItemProps> = ({ product }) => {
   const [callList, setCallList] = useState(false);
   const handleOpenModal = () => setOpenModal(true);
   const handleCloseModal = () => setOpenModal(false);
+  const dispatch = useAppDispatch();
 
   const FcLocalStrogate = (data: any) => {
+    dispatch(cartActions.updateAmountCart());
     const key = new LocalKey('array', '');
     const dataLC: any = LocalStorage.getItem(key);
     const a = JSON.parse(dataLC) || [];

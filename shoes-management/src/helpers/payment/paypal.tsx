@@ -1,5 +1,5 @@
 import { api } from 'api/api';
-import { useAppSelector } from 'app/hooks';
+import { useAppDispatch, useAppSelector } from 'app/hooks';
 import { RootState } from 'app/store';
 import { Voucher } from '../../constants';
 import { HomeEnumPath } from 'features/home/home';
@@ -8,6 +8,7 @@ import ReactDOM from 'react-dom';
 import { useHistory } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { LocalKey, LocalStorage } from 'ts-localstorage';
+import { cartActions } from 'features/cart/redux/cartSlice';
 
 const PayPalButton = (window as any)?.paypal.Buttons.driver('react', { React, ReactDOM });
 
@@ -20,6 +21,7 @@ const PaypalButtonWrapper: FC<PaypalButtonWrapperProps> = ({ total, voucher }) =
   const userInfor = useAppSelector((state: RootState) => state.auth.currentUser);
   const history = useHistory();
   const money = +total / 23000;
+  const dispatch = useAppDispatch();
   const createOrder = (data: any, actions: any) => {
     return actions.order.create({
       purchase_units: [
@@ -44,7 +46,9 @@ const PaypalButtonWrapper: FC<PaypalButtonWrapperProps> = ({ total, voucher }) =
     const cartList = a.map((i: any) => {
       return {
         productId: i.id,
-        amount: i.price * i.count,
+        amount: i.count,
+        total: i.price * i.count - (i.price * i.count * i.discount) / 100,
+        size: i.productSizes[0].size.sizeNumber,
       };
     });
     try {
@@ -56,6 +60,7 @@ const PaypalButtonWrapper: FC<PaypalButtonWrapperProps> = ({ total, voucher }) =
         voucherId,
         userId: parseInt(userId as string),
         total,
+        payment: 1,
       });
       if (res) {
         // get Id invoice for detailInvoice table
@@ -76,6 +81,7 @@ const PaypalButtonWrapper: FC<PaypalButtonWrapperProps> = ({ total, voucher }) =
     localStorage.removeItem('cart');
     toast.success('Thanh toán đơn hàng thành công');
     history.push(HomeEnumPath.HOMEPAGE);
+    dispatch(cartActions.updateAmountCart());
     return actions.order.capture();
   };
 

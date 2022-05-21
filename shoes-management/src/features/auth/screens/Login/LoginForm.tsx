@@ -7,9 +7,10 @@ import { FC } from 'react';
 import { useForm } from 'react-hook-form';
 import { ToastContainer, toast } from 'react-toastify';
 import { Link } from 'react-router-dom';
-import { LocalKey, LocalStorage } from "ts-localstorage";
+import { LocalKey, LocalStorage } from 'ts-localstorage';
 import { STORAGE_KEY } from 'constants/storage/storage';
 import axios from 'axios';
+import { HomeEnumPath } from 'features/home/home';
 
 export interface LoginFormProps {
   initialValues?: LoginPayload;
@@ -24,15 +25,15 @@ const LoginForm: FC<LoginFormProps> = ({ initialValues, onSubmit }) => {
 
   const handleFormSubmit = async (formValues: LoginPayload) => {
     try {
-      const data: any = await axios.post("http://localhost:5000/api/auth/login", formValues)
+      const data: any = await axios.post('http://localhost:5000/api/auth/login', formValues);
 
-      const key = new LocalKey(STORAGE_KEY.TOKEN, "");
-      const keyUser = new LocalKey(STORAGE_KEY.USER, "");
+      const key = new LocalKey(STORAGE_KEY.TOKEN, '');
+      const keyUser = new LocalKey(STORAGE_KEY.USER, '');
       LocalStorage.setItem(key, JSON.stringify(data.data.message.token));
       LocalStorage.setItem(keyUser, JSON.stringify(data.data.message));
-      window.location.href = "http://localhost:3000";
-    } catch (error:any) {
-      toast.error(error.response.data.message)
+      window.location.href = 'http://localhost:3000';
+    } catch (error: any) {
+      toast.error(error.response.data.message);
     }
   };
 
@@ -40,7 +41,9 @@ const LoginForm: FC<LoginFormProps> = ({ initialValues, onSubmit }) => {
     <Box width="500px" padding="50px" margin="auto">
       <Box width="85%" margin="0 auto" textAlign="center">
         <Box paddingBottom="20px" borderBottom="1px solid #ccc">
-          <img src={Logo} alt="logo" width={160} />
+          <Link to={HomeEnumPath.HOMEPAGE}>
+            <img src={Logo} alt="logo" width={160} />
+          </Link>
         </Box>
 
         <Typography
@@ -112,11 +115,6 @@ const LoginForm: FC<LoginFormProps> = ({ initialValues, onSubmit }) => {
           <Link to={AuthEnumsPath.REGISTER}>Đăng ký ngay</Link>
         </Box>
       </Box>
-      <ToastContainer
-        position="top-right"
-        autoClose={3000}
-        closeOnClick
-      />
     </Box>
   );
 };

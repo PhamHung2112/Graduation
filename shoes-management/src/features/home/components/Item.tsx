@@ -8,6 +8,8 @@ import { Link } from 'react-router-dom';
 import { Product } from '../../../constants';
 import ProductSlider from './ProductSlider';
 import { keyframes } from '@mui/system';
+import { useAppDispatch } from 'app/hooks';
+import { cartActions } from 'features/cart/redux/cartSlice';
 
 export interface ProductItemProps {
   product: Product;
@@ -31,13 +33,18 @@ const buzz = keyframes`
 
 const ProductItem: FC<ProductItemProps> = ({ product }) => {
   const [openModal, setOpenModal] = useState(false);
-
+  const dispatch = useAppDispatch();
   const handleOpenModal = () => setOpenModal(true);
   const handleCloseModal = () => setOpenModal(false);
 
   const favorite = JSON.parse(localStorage.getItem('array') as string)?.some(
     (item: any) => item.id === product.id
   );
+
+  const handleAddCart = (product: any) => {
+    FcLocalStrogate(product);
+    dispatch(cartActions.updateAmountCart());
+  };
 
   return (
     <Fragment key={product.id}>
@@ -139,9 +146,7 @@ const ProductItem: FC<ProductItemProps> = ({ product }) => {
                   boxShadow="0 3px 10px rgb(0 0 0 / 8%)"
                   transition=".3s"
                   margin="0 10px"
-                  onClick={() => {
-                    FcLocalStrogate(product);
-                  }}
+                  onClick={() => handleAddCart(product)}
                 >
                   <ShoppingBagOutlined />
                 </CustomMuiIconButton>

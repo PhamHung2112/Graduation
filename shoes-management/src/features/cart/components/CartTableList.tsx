@@ -64,7 +64,6 @@ const CartTableList: FC = () => {
           Tiếp tục mua hàng
         </CustomMuiButton>
       </Box>
-      <ToastContainer position="top-right" autoClose={3000} closeOnClick />
     </>
   );
 };
